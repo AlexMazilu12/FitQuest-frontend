@@ -75,11 +75,10 @@ function AddUser({ onUserAdded }) {
                 <select name="role" value={formData.role} onChange={handleInputChange}>
                     <option value="USER">USER</option>
                     <option value="TRAINER">TRAINER</option>
-                    <option value="ADMIN">ADMIN</option>
                 </select>
             </label>
 
-            <button type="submit">Add User</button>
+            <button type="submit">Register</button>
         </form>
     );
 }

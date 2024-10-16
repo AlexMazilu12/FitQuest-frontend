@@ -29,7 +29,7 @@ function App() {
               ))}
           </ul>
 
-          <h2>Add New User</h2>
+          <h2>Register New User</h2>
           <AddUser onUserAdded={handleUserAdded} />
       </div>
   );
