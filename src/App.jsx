@@ -6,19 +6,16 @@ function App() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-      // Fetch all users when the component loads
       const fetchUsers = async () => {
           const response = await fetch("http://localhost:8080/users");
           const data = await response.json();
-          setUsers(data.users); // Assuming the response structure is { users: [...] }
+          setUsers(data.users);
       };
 
       fetchUsers();
   }, []);
-
-  // Callback to add new user to the list
   const handleUserAdded = (newUser) => {
-      setUsers([...users, newUser]); // Add the new user to the existing users array
+      setUsers([...users, newUser]);
   };
 
   return (

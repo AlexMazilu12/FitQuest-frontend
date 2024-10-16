@@ -5,7 +5,7 @@ function AddUser({ onUserAdded }) {
         name: "",
         email: "",
         password: "",
-        role: "USER" // Default role
+        role: "USER"
     });
 
     const handleInputChange = (event) => {
@@ -29,7 +29,7 @@ function AddUser({ onUserAdded }) {
 
         if (response.ok) {
             const newUser = await response.json();
-            onUserAdded(newUser); // Callback to update parent component with the new user
+            onUserAdded(newUser);
         } else {
             console.error("Failed to add user");
         }
