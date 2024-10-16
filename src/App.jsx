@@ -1,45 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { UserService } from "./services/UserService";
+import AddUser from "./components/AddUser";
 
 function App() {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-
-  const loadUsers = () => {
-    setLoading(true);
-    setError(false);
-    UserService.getAllUsers()
-      .then((data) => {
-        setUsers(data.users || []);
-      })
-      .catch((err) => {
-        setError(true);
-        console.error(err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
 
   useEffect(() => {
-    loadUsers();
+      // Fetch all users when the component loads
+      const fetchUsers = async () => {
+          const response = await fetch("http://localhost:8080/users");
+          const data = await response.json();
+          setUsers(data.users); // Assuming the response structure is { users: [...] }
+      };
+
+      fetchUsers();
   }, []);
 
+  // Callback to add new user to the list
+  const handleUserAdded = (newUser) => {
+      setUsers([...users, newUser]); // Add the new user to the existing users array
+  };
+
   return (
-    <div className="container">
-      <h1>User List</h1>
-      {loading && <p>Loading...</p>}
-      {error && <p>Failed to load users. Please try again.</p>}
-      {!loading && !error && users.length > 0 && (
-        <ul>
-          {users.map((user) => (
-            <li key={user.id}>{user.name} ({user.email})</li>
-          ))}
-        </ul>
-      )}
-      {!loading && !error && users.length === 0 && <p>No users found.</p>}
-    </div>
+      <div>
+          <h1>All Users</h1>
+          <ul>
+              {users.map((user) => (
+                  <li key={user.id}>
+                      {user.name} ({user.email}) - {user.role}
+                  </li>
+              ))}
+          </ul>
+
+          <h2>Add New User</h2>
+          <AddUser onUserAdded={handleUserAdded} />
+      </div>
   );
 }
 
