@@ -1,0 +1,28 @@
+
+.navbar {
+    background-color: #36394A;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    font-style: bold;
+    font-family: 'Inter', bold;
+    font-size:18px;
+}
+
+.navbar-brand img {
+    width: 80px;
+    height: 60px;
+}
+
+.navbar-nav .nav-link {
+    color: #FFFFFF;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #CCCCCC;
+}
+
+.navbar-nav .nav-link.text-primary {
+    color: #00BFFF;
+}
