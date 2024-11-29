@@ -1,4 +1,3 @@
-// services/UserService.js
 import axios from 'axios';
 
 export const UserService = {

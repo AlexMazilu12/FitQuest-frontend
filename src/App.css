@@ -9,7 +9,10 @@
   width: 100%;
   color: white;
 }
-body {
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
   background-color: #23242F;
   margin: 0;
   height: 100vh;

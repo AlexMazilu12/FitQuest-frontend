@@ -1,43 +1,29 @@
-import React, { useEffect, useState } from "react";
-import { UserService } from "./services/UserService";
-import AddUser from "./components/AddUser";
-import Navbar from "./components/Navbar";
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Navbar from "./components/NavBar";
+import WorkoutPage from "./components/WorkoutPage";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import {AuthProvider} from "./services/AuthProvider.jsx";
 import "./App.css";
-import "@fontsource/inter"
+import "@fontsource/inter";
 
 function App() {
-    const [users, setUsers] = useState([]);
-
-    useEffect(() => {
-        const fetchUsers = async () => {
-            const response = await fetch("http://localhost:8080/users");
-            const data = await response.json();
-            setUsers(data.users);
-        };
-
-        fetchUsers();
-    }, []);
-
-    const handleUserAdded = (newUser) => {
-        setUsers([...users, newUser]);
-    };
-
     return (
-        <div style={{ backgroundColor: '#23242F', height: '100%', width:"100%" }}>
-            <Navbar />
-            <div className="container mt-5 pt-4">
-                <h1>All Users</h1>
-                <ul>
-                    {users.map((user) => (
-                        <li key={user.id}>
-                            {user.name} ({user.email}) - {user.role}
-                        </li>
-                    ))}
-                </ul>
-
-                <h2>Register New User</h2>
-                <AddUser onUserAdded={handleUserAdded} />
-            </div>
+        <div style={{ backgroundColor: '#23242F', height: '100%', width: "100%" }}>
+            <AuthProvider>
+                <Router>
+                    <Navbar />
+                    <div className="container mt-5 pt-4">
+                        <Routes>
+                            <Route path="/" element={<h1>Welcome to the Workout App</h1>} />
+                            <Route path="/workouts" element={<WorkoutPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
+                            <Route path="/login" element={<LoginPage />} />
+                        </Routes>
+                    </div>
+                </Router>
+            </AuthProvider>
         </div>
     );
 }
