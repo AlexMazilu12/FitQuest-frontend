@@ -27,8 +27,8 @@ const Navbar = () => {
                     <div className="d-flex">
                         {isAuthenticated ? (
                             <>
-                                <Link className="nav-link text-primary" to="/profile" style={{ marginRight: '20px' }}>Profile</Link>
-                                <button className="btn btn-link nav-link" onClick={logout} style={{ marginRight: '10px' }}>Logout</button>
+                                <Link className="nav-link text-primary" to="/profile" style={{ marginRight: '10px' }}>Profile</Link>
+                                <button className="btn btn-link nav-link" onClick={logout} >Logout</button>
                             </>
                         ) : (
                             <Link className="nav-link text-primary" to="/login">Authenticate</Link>

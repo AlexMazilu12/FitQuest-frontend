@@ -15,8 +15,7 @@ function App() {
             <AuthProvider>
                 <Router>
                     <Navbar />
-                    {/* Adjust padding-top to match navbar height */}
-                    <div className="container" style={{ paddingTop: "80px" }}>
+                    <div className="container mt-5 pt-4">
                         <Routes>
                             <Route path="/" element={<h1>Welcome to the Workout App</h1>} />
                             <Route path="/workouts" element={<WorkoutPage />} />
@@ -30,6 +29,5 @@ function App() {
         </div>
     );
 }
-
 
 export default App;
