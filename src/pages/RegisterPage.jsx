@@ -1,44 +1,46 @@
-import { useState } from "react"
-import { Button, Box, Typography, Paper, TextField } from "@mui/material"
+import { useState } from "react";
+import { Button, Box, Typography, Paper, TextField, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 import NavBar from "../components/NavBar";
 import registerImage from "../assets/images/fitquest-logo.jpg";
-import axios from "axios"
-import {Link, useNavigate} from "react-router-dom"
-import {useAuth} from "../services/AuthProvider.jsx";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../services/AuthProvider.jsx";
 
 const RegisterPage = () => {
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [confirmPassword, setConfirmPassword] = useState("")
-    const [error, setError] = useState(null)
-    const [success, setSuccess] = useState(null)
-    const navigate = useNavigate()
-    const {login, isAuthenticated} = useAuth()
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [role, setRole] = useState("USER");
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+    const navigate = useNavigate();
+    const { login, isAuthenticated } = useAuth();
 
-    if(isAuthenticated) {
-        navigate('/')
+    if (isAuthenticated) {
+        navigate('/');
     }
 
     const handleSubmit = async (event) => {
-        event.preventDefault()
-        setError(null)
-        setSuccess(null)
+        event.preventDefault();
+        setError(null);
+        setSuccess(null);
 
         if (password !== confirmPassword) {
-            setError("Passwords do not match.")
+            setError("Passwords do not match.");
             return;
         }
 
         try {
-            const response = await axios.post("http://localhost:8080/auth/register", { email, password })
-            setSuccess("Registration successful! Logging you in...")
+            const response = await axios.post("http://localhost:8080/auth/register", { name, email, password, role });
+            setSuccess("Registration successful! Logging you in...");
 
             login(response.data.accessToken);
 
             navigate("/");
         } catch (err) {
-            console.error("Error registering or logging in:", err.response?.data || err.message)
-            setError(err.response?.data?.message || "An error occurred during registration.")
+            console.error("Error registering or logging in:", err.response?.data || err.message);
+            setError(err.response?.data?.message || "An error occurred during registration.");
         }
     };
 
@@ -70,7 +72,7 @@ const RegisterPage = () => {
                         <img src={registerImage} alt="Register" style={{ width: "200px" }} />
                     </div>
                     <Typography variant="h4" align="center" gutterBottom>
-                        Register for FitQuest
+                        Register for MindEase
                     </Typography>
                     {error && (
                         <Typography
@@ -102,6 +104,14 @@ const RegisterPage = () => {
                         onSubmit={handleSubmit}
                     >
                         <TextField
+                            label="Name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            fullWidth
+                        />
+                        <TextField
                             label="Email"
                             type="email"
                             value={email}
@@ -125,6 +135,18 @@ const RegisterPage = () => {
                             required
                             fullWidth
                         />
+                        <FormControl fullWidth required>
+                            <InputLabel id="role-label">Role</InputLabel>
+                            <Select
+                                labelId="role-label"
+                                value={role}
+                                onChange={(e) => setRole(e.target.value)}
+                                label="Role"
+                            >
+                                <MenuItem value="USER">User</MenuItem>
+                                <MenuItem value="TRAINER">Trainer</MenuItem>
+                            </Select>
+                        </FormControl>
                         <Button
                             type="submit"
                             variant="contained"

@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { WorkoutService } from "../services/WorkoutService";
+import { useAuth } from "../services/AuthProvider.jsx";
+
 
 const WorkoutPage = () => {
   const [workouts, setWorkouts] = useState([]);
   const [workout, setWorkout] = useState({ title: "", description: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
-  // Fetch all workouts on component load
   useEffect(() => {
-    fetchWorkouts();
-  }, []);
+    if (!isAuthenticated) {
+      navigate("/login");
+    } else {
+      fetchWorkouts();
+    }
+  }, [isAuthenticated, navigate]);
 
   const fetchWorkouts = async () => {
     try {
