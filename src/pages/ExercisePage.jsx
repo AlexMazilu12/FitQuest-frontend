@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { WorkoutService } from "../services/WorkoutService";
+import { ExerciseService } from "../services/ExerciseService";
 import { useAuth } from "../services/AuthProvider.jsx";
 import { Button, TextField, Box, Typography, Paper } from "@mui/material";
 
-const WorkoutPage = () => {
-  const [workouts, setWorkouts] = useState([]);
-  const [workout, setWorkout] = useState({ title: "", description: "" });
+const ExercisePage = () => {
+  const [exercises, setExercises] = useState([]);
+  const [exercise, setExercise] = useState({ title: "", description: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
@@ -16,29 +16,31 @@ const WorkoutPage = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
+    } else if (!user || user.role !== "ADMIN") {
+      navigate("/unauthorized");
     } else {
-      fetchWorkouts();
+      fetchExercises();
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
-  const fetchWorkouts = async () => {
+  const fetchExercises = async () => {
     try {
-      const response = await WorkoutService.getAllWorkouts(user.token);
-      if (response && Array.isArray(response.workoutPlans)) {
-        setWorkouts(response.workoutPlans);
+      const response = await ExerciseService.getAllExercises(user.token);
+      if (response && Array.isArray(response)) {
+        setExercises(response);
       } else {
-        setWorkouts([]);
+        setExercises([]);
         console.error("Expected an array but got:", response);
       }
     } catch (error) {
-      console.error("Error fetching workouts:", error);
-      setError("Error fetching workouts");
+      console.error("Error fetching exercises:", error);
+      setError("Error fetching exercises");
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setWorkout({ ...workout, [name]: value });
+    setExercise({ ...exercise, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -46,25 +48,25 @@ const WorkoutPage = () => {
     setError(null);
 
     try {
-      const workoutWithUserId = { ...workout, userId: user.id };
+      const exerciseWithUserId = { ...exercise, userId: user.id };
 
       if (isEditing) {
-        await WorkoutService.updateWorkout(editId, workoutWithUserId, user.token);
+        await ExerciseService.updateExercise(editId, exerciseWithUserId, user.token);
       } else {
-        await WorkoutService.createWorkout(workoutWithUserId, user.token);
+        await ExerciseService.createExercise(exerciseWithUserId, user.token);
       }
-      setWorkout({ title: "", description: "" });
-      fetchWorkouts();
+      setExercise({ title: "", description: "" });
+      fetchExercises();
     } catch (error) {
-      console.error("Error saving workout:", error);
-      setError("Error saving workout");
+      console.error("Error saving exercise:", error);
+      setError("Error saving exercise");
     }
   };
 
   return (
     <div>
       <Typography variant="h4" align="center" gutterBottom>
-        Workout Page
+        Exercise Page
       </Typography>
       {error && (
         <Typography variant="body2" align="center" color="error" sx={{ marginBottom: 2 }}>
@@ -75,7 +77,7 @@ const WorkoutPage = () => {
         <TextField
           label="Title"
           name="title"
-          value={workout.title}
+          value={exercise.title}
           onChange={handleChange}
           required
           fullWidth
@@ -89,7 +91,7 @@ const WorkoutPage = () => {
         <TextField
           label="Description"
           name="description"
-          value={workout.description}
+          value={exercise.description}
           onChange={handleChange}
           required
           fullWidth
@@ -101,26 +103,26 @@ const WorkoutPage = () => {
           }}
         />
         <Button type="submit" variant="contained" color="primary" fullWidth>
-          {isEditing ? "Update Workout" : "Create Workout"}
+          {isEditing ? "Update Exercise" : "Create Exercise"}
         </Button>
       </Box>
       <div>
-        {workouts.map((workout) => (
-          <Paper key={workout.id} sx={{ padding: 2, margin: 2 }}>
-            <Typography variant="h6">{workout.title}</Typography>
-            <Typography>{workout.description}</Typography>
+        {exercises.map((exercise) => (
+          <Paper key={exercise.id} sx={{ padding: 2, margin: 2 }}>
+            <Typography variant="h6">{exercise.title}</Typography>
+            <Typography>{exercise.description}</Typography>
             <Button onClick={() => {
-              setWorkout({ title: workout.title, description: workout.description });
+              setExercise({ title: exercise.title, description: exercise.description });
               setIsEditing(true);
-              setEditId(workout.id);
+              setEditId(exercise.id);
             }}>Edit</Button>
             <Button onClick={async () => {
               try {
-                await WorkoutService.deleteWorkout(workout.id, user.token);
-                fetchWorkouts();
+                await ExerciseService.deleteExercise(exercise.id, user.token);
+                fetchExercises();
               } catch (error) {
-                console.error("Error deleting workout:", error);
-                setError("Error deleting workout");
+                console.error("Error deleting exercise:", error);
+                setError("Error deleting exercise");
               }
             }}>Delete</Button>
           </Paper>
@@ -130,4 +132,4 @@ const WorkoutPage = () => {
   );
 };
 
-export default WorkoutPage;
+export default ExercisePage;
