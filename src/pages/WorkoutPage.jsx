@@ -2,14 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { WorkoutService } from "../services/WorkoutService";
 import { useAuth } from "../services/AuthProvider.jsx";
-
+import { Button, TextField, Box, Typography, Paper } from "@mui/material";
 
 const WorkoutPage = () => {
   const [workouts, setWorkouts] = useState([]);
   const [workout, setWorkout] = useState({ title: "", description: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
-  const { isAuthenticated } = useAuth();
+  const [error, setError] = useState(null);
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,10 +23,16 @@ const WorkoutPage = () => {
 
   const fetchWorkouts = async () => {
     try {
-      const data = await WorkoutService.getAllWorkouts();
-      setWorkouts(data);
+      const response = await WorkoutService.getAllWorkouts(user.token);
+      if (response && Array.isArray(response.workoutPlans)) {
+        setWorkouts(response.workoutPlans);
+      } else {
+        setWorkouts([]);
+        console.error("Expected an array but got:", response);
+      }
     } catch (error) {
       console.error("Error fetching workouts:", error);
+      setError("Error fetching workouts");
     }
   };
 
@@ -36,88 +43,78 @@ const WorkoutPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
     try {
       if (isEditing) {
         // Update workout
-        await WorkoutService.updateWorkout(editId, workout);
+        await WorkoutService.updateWorkout(editId, workout, user.token);
         setIsEditing(false);
         setEditId(null);
       } else {
         // Create new workout
-        await WorkoutService.createWorkout(workout);
+        await WorkoutService.createWorkout(workout, user.token);
       }
       // Reset form and refresh workouts
       setWorkout({ title: "", description: "" });
       fetchWorkouts();
     } catch (error) {
       console.error("Error saving workout:", error);
-    }
-  };
-
-  const handleEdit = (id, workout) => {
-    setWorkout(workout);
-    setIsEditing(true);
-    setEditId(id);
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await WorkoutService.deleteWorkout(id);
-      fetchWorkouts();
-    } catch (error) {
-      console.error("Error deleting workout:", error);
+      setError("Error saving workout");
     }
   };
 
   return (
     <div>
-      <h1>Workout Page</h1>
-
-      {/* Form for Creating/Editing Workouts */}
+      <Typography variant="h4" align="center" gutterBottom>
+        Workout Page
+      </Typography>
+      {error && (
+        <Typography variant="body2" align="center" color="error" sx={{ marginBottom: 2 }}>
+          {error}
+        </Typography>
+      )}
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <TextField
+          label="Title"
+          name="title"
+          value={workout.title}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          label="Description"
+          name="description"
+          value={workout.description}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <Button type="submit" variant="contained" color="primary" fullWidth>
+          {isEditing ? "Update Workout" : "Create Workout"}
+        </Button>
+      </Box>
       <div>
-        <h2>{isEditing ? "Edit Workout Plan" : "Create Workout Plan"}</h2>
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>Title</label>
-            <input
-              type="text"
-              name="title"
-              value={workout.title}
-              onChange={handleChange}
-              placeholder="Enter workout title"
-            />
-          </div>
-          <div>
-            <label>Description</label>
-            <textarea
-              name="description"
-              value={workout.description}
-              onChange={handleChange}
-              placeholder="Enter workout description"
-            />
-          </div>
-          <button type="submit">{isEditing ? "Update" : "Create"}</button>
-        </form>
-      </div>
-
-      {/* List of Workouts */}
-      <div>
-        <h2>Workout Plans</h2>
-        {workouts.length > 0 ? (
-          <ul>
-            {workouts.map((w) => (
-              <li key={w.id}>
-                <strong>{w.title}</strong> - {w.description}
-                <button onClick={() => handleEdit(w.id, { title: w.title, description: w.description })}>
-                  Edit
-                </button>
-                <button onClick={() => handleDelete(w.id)}>Delete</button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No workouts available. Start by creating one!</p>
-        )}
+        {workouts.map((workout) => (
+          <Paper key={workout.id} sx={{ padding: 2, margin: 2 }}>
+            <Typography variant="h6">{workout.title}</Typography>
+            <Typography>{workout.description}</Typography>
+            <Button onClick={() => {
+              setWorkout({ title: workout.title, description: workout.description });
+              setIsEditing(true);
+              setEditId(workout.id);
+            }}>Edit</Button>
+            <Button onClick={async () => {
+              try {
+                await WorkoutService.deleteWorkout(workout.id, user.token);
+                fetchWorkouts();
+              } catch (error) {
+                console.error("Error deleting workout:", error);
+                setError("Error deleting workout");
+              }
+            }}>Delete</Button>
+          </Paper>
+        ))}
       </div>
     </div>
   );

@@ -2,11 +2,19 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8080/workouts';
 
+const getAuthHeaders = (token) => {
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
+
 export const WorkoutService = {
-  getAllWorkouts(title = null) {
+  getAllWorkouts(token, title = null) {
     const params = title ? { title } : {};
     return axios
-      .get(API_URL, { params })
+      .get(API_URL, { ...getAuthHeaders(token), params })
       .then(response => response.data)
       .catch(error => {
         console.error("Error fetching workouts:", error);
@@ -14,20 +22,19 @@ export const WorkoutService = {
       });
   },
 
-  createWorkout(workout) {
-    const workoutWithUserId = { ...workout, userId: 1 };
+  createWorkout(workout, token) {
     return axios
-      .post(API_URL, workoutWithUserId)
+      .post(API_URL, workout, getAuthHeaders(token))
       .then(response => response.data)
       .catch(error => {
         console.error("Error creating workout:", error);
         throw error;
       });
-    },
+  },
 
-  updateWorkout(id, workout) {
+  updateWorkout(id, workout, token) {
     return axios
-      .put(`${API_URL}/${id}`, workout)
+      .put(`${API_URL}/${id}`, workout, getAuthHeaders(token))
       .then(response => response.data)
       .catch(error => {
         console.error("Error updating workout:", error);
@@ -35,9 +42,9 @@ export const WorkoutService = {
       });
   },
 
-  deleteWorkout(id) {
+  deleteWorkout(id, token) {
     return axios
-      .delete(`${API_URL}/${id}`)
+      .delete(`${API_URL}/${id}`, getAuthHeaders(token))
       .then(response => response.data)
       .catch(error => {
         console.error("Error deleting workout:", error);
