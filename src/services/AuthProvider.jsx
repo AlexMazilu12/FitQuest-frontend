@@ -8,7 +8,9 @@ const decodeJWT = (token) => {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
 
-        return JSON.parse(jsonPayload);
+        const decoded = JSON.parse(jsonPayload);
+        console.log("Decoded JWT payload:", decoded);
+        return decoded;
     } catch (e) {
         return null;
     }
@@ -28,7 +30,7 @@ export const AuthProvider = ({ children }) => {
         if (storedToken) {
             const decoded = decodeJWT(storedToken);
             if (decoded && !isTokenExpired(decoded)) {
-                return { ...decoded, token: storedToken };
+                return { ...decoded, id: decoded.userId, token: storedToken };
             }
             localStorage.removeItem("token");
         }

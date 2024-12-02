@@ -1,54 +1,74 @@
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8080/workouts';
-
-const getAuthHeaders = (token) => {
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-};
-
 export const WorkoutService = {
-  getAllWorkouts(token, title = null) {
-    const params = title ? { title } : {};
-    return axios
-      .get(API_URL, { ...getAuthHeaders(token), params })
-      .then(response => response.data)
-      .catch(error => {
-        console.error("Error fetching workouts:", error);
-        throw error;
+  getAllWorkouts: async (token) => {
+      const response = await fetch("http://localhost:8080/workouts", {
+          method: "GET",
+          headers: {
+              Authorization: `Bearer ${token}`, // Pass the token for authentication
+          },
       });
+      if (!response.ok) {
+          throw new Error(`Error fetching workouts: ${response.statusText}`);
+      }
+      return await response.json();
   },
 
-  createWorkout(workout, token) {
-    return axios
-      .post(API_URL, workout, getAuthHeaders(token))
-      .then(response => response.data)
-      .catch(error => {
-        console.error("Error creating workout:", error);
-        throw error;
+  createWorkout: async (workout, token) => {
+      const response = await fetch("http://localhost:8080/workouts", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(workout),
       });
+      if (!response.ok) {
+          throw new Error(`Error creating workout: ${response.statusText}`);
+          
+      }
+      return await response.json();
   },
 
-  updateWorkout(id, workout, token) {
-    return axios
-      .put(`${API_URL}/${id}`, workout, getAuthHeaders(token))
-      .then(response => response.data)
-      .catch(error => {
-        console.error("Error updating workout:", error);
-        throw error;
-      });
-  },
+  updateWorkout: async (id, workout, token) => {
+    const response = await fetch(`http://localhost:8080/workouts/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(workout),
+    });
+    if (!response.ok) {
+        throw new Error(`Error updating workout: ${response.statusText}`);
+    }
 
-  deleteWorkout(id, token) {
-    return axios
-      .delete(`${API_URL}/${id}`, getAuthHeaders(token))
-      .then(response => response.data)
-      .catch(error => {
-        console.error("Error deleting workout:", error);
-        throw error;
-      });
+    const contentType = response.headers.get("Content-Type");
+    if (contentType && contentType.includes("application/json")) {
+        return await response.json();
+    }
+
+    return { message: "Workout updated successfully" };
+},
+
+
+deleteWorkout: async (id, token) => {
+  const response = await fetch(`http://localhost:8080/workouts/${id}`, {
+      method: "DELETE",
+      headers: {
+          Authorization: `Bearer ${token}`, // Include the token in headers
+      },
+  });
+
+  if (!response.ok) {
+      throw new Error(`Error deleting workout: ${response.statusText}`);
+  }
+
+  // Check if the response has a JSON body
+  const contentType = response.headers.get("Content-Type");
+  if (contentType && contentType.includes("application/json")) {
+      return await response.json();
+  }
+
+  // Return a default success message or handle as needed
+  return { message: "Workout deleted successfully" };
   },
 };

@@ -40,28 +40,25 @@ const WorkoutPage = () => {
     const { name, value } = e.target;
     setWorkout({ ...workout, [name]: value });
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
     try {
-      if (isEditing) {
-        // Update workout
-        await WorkoutService.updateWorkout(editId, workout, user.token);
-        setIsEditing(false);
-        setEditId(null);
-      } else {
-        // Create new workout
-        await WorkoutService.createWorkout(workout, user.token);
-      }
-      // Reset form and refresh workouts
-      setWorkout({ title: "", description: "" });
-      fetchWorkouts();
+        const workoutWithUserId = { ...workout, userId: user.id };
+
+        if (isEditing) {
+            await WorkoutService.updateWorkout(editId, workoutWithUserId, user.token);
+        } else {
+            await WorkoutService.createWorkout(workoutWithUserId, user.token);
+        }
+        setWorkout({ title: "", description: "" });
+        fetchWorkouts();
     } catch (error) {
-      console.error("Error saving workout:", error);
-      setError("Error saving workout");
+        console.error("Error saving workout:", error);
+        setError("Error saving workout");
     }
-  };
+};
 
   return (
     <div>
