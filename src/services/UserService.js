@@ -1,13 +1,24 @@
-import axios from 'axios';
+import axios from "axios";
+
+const API_URL = "http://localhost:8080/users";
 
 export const UserService = {
-  getAllUsers(name = null) {
-    const params = name ? { name } : {};
-    return axios.get('http://localhost:8080/users', { params })
-      .then(response => response.data)
-      .catch(error => {
-        console.error("Error fetching users:", error);
-        throw error;
-      });
-  }
+  getAllUsers: async (token) => {
+    const response = await axios.get(API_URL, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  },
+  addUser: async (user, token) => {
+    const response = await axios.post(API_URL, user, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  },
+  updateUser: async (id, user, token) => {
+    const response = await axios.put(`${API_URL}/${id}`, user, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  },
 };

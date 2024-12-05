@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ExerciseService } from "../services/ExerciseService";
 import { useAuth } from "../services/AuthProvider.jsx";
-import { Button, TextField, Box, Typography, Paper } from "@mui/material";
+import { Button, TextField, Box, Typography, Paper, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
 
 const ExercisePage = () => {
   const [exercises, setExercises] = useState([]);
-  const [exercise, setExercise] = useState({ title: "", description: "" });
+  const [exercise, setExercise] = useState({ title: "", description: "", muscleGroup: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
@@ -52,10 +52,12 @@ const ExercisePage = () => {
 
       if (isEditing) {
         await ExerciseService.updateExercise(editId, exerciseWithUserId, user.token);
+        setIsEditing(false);
+        setEditId(null);
       } else {
         await ExerciseService.createExercise(exerciseWithUserId, user.token);
       }
-      setExercise({ title: "", description: "" });
+      setExercise({ title: "", description: "", muscleGroup: "" });
       fetchExercises();
     } catch (error) {
       console.error("Error saving exercise:", error);
@@ -102,6 +104,24 @@ const ExercisePage = () => {
             style: { color: 'white' },
           }}
         />
+        <FormControl fullWidth required>
+          <InputLabel id="muscle-group-label" style={{ color: 'white' }}>Muscle Group</InputLabel>
+          <Select
+            labelId="muscle-group-label"
+            name="muscleGroup"
+            value={exercise.muscleGroup}
+            onChange={handleChange}
+            label="Muscle Group"
+            style={{ color: 'white' }}
+          >
+            <MenuItem value="CHEST">Chest</MenuItem>
+            <MenuItem value="BACK">Back</MenuItem>
+            <MenuItem value="LEGS">Legs</MenuItem>
+            <MenuItem value="ARMS">Arms</MenuItem>
+            <MenuItem value="SHOULDERS">Shoulders</MenuItem>
+            <MenuItem value="ABS">Abs</MenuItem>
+          </Select>
+        </FormControl>
         <Button type="submit" variant="contained" color="primary" fullWidth>
           {isEditing ? "Update Exercise" : "Create Exercise"}
         </Button>
@@ -111,8 +131,9 @@ const ExercisePage = () => {
           <Paper key={exercise.id} sx={{ padding: 2, margin: 2 }}>
             <Typography variant="h6">{exercise.title}</Typography>
             <Typography>{exercise.description}</Typography>
+            <Typography>{exercise.muscleGroup}</Typography>
             <Button onClick={() => {
-              setExercise({ title: exercise.title, description: exercise.description });
+              setExercise({ title: exercise.title, description: exercise.description, muscleGroup: exercise.muscleGroup });
               setIsEditing(true);
               setEditId(exercise.id);
             }}>Edit</Button>

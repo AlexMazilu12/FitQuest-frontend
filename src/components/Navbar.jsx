@@ -8,7 +8,7 @@ import "@fontsource/inter";
 import { useAuth } from "../services/AuthProvider.jsx";
 
 const Navbar = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
 
   return (
     <nav className="navbar navbar-expand-lg">
@@ -18,15 +18,28 @@ const Navbar = () => {
         </Link>
         <div className="collapse navbar-collapse">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item">
-              <Link className="nav-link" to="/workouts">Workouts</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/exercises">Exercises</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/trainers">Trainers</Link>
-            </li>
+            {isAuthenticated && user.role === "ADMIN" ? (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/users">Users</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/exercises">Exercises</Link>
+                </li>
+              </>
+            ) : (
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/workouts">Workouts</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/exercises">Exercises</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/trainers">Trainers</Link>
+                </li>
+              </>
+            )}
           </ul>
           <div className="d-flex">
             {isAuthenticated ? (
