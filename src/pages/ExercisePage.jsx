@@ -2,30 +2,31 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ExerciseService } from "../services/ExerciseService";
 import { useAuth } from "../services/AuthProvider.jsx";
-import { Button, TextField, Box, Typography, Paper, MenuItem, Select, FormControl, InputLabel } from "@mui/material";
+import { Button, TextField, Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
-const ExercisePage = () => {
+const ExercisesPage = () => {
   const [exercises, setExercises] = useState([]);
-  const [exercise, setExercise] = useState({ title: "", description: "", muscleGroup: "" });
+  const [exercise, setExercise] = useState({ name: "", description: "", muscleGroup: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user: authUser } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
-    } else if (!user || user.role !== "ADMIN") {
+    } else if (!authUser || authUser.role !== "ADMIN") {
       navigate("/unauthorized");
     } else {
       fetchExercises();
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, authUser, navigate]);
 
   const fetchExercises = async () => {
     try {
-      const response = await ExerciseService.getAllExercises(user.token);
+      const response = await ExerciseService.getAllExercises(authUser.token);
+      console.log("Response from getAllExercises:", response); // Log the response for debugging
       if (response && Array.isArray(response)) {
         setExercises(response);
       } else {
@@ -34,123 +35,120 @@ const ExercisePage = () => {
       }
     } catch (error) {
       console.error("Error fetching exercises:", error);
-      setError("Error fetching exercises");
     }
   };
 
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     setExercise({ ...exercise, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-
     try {
-      const exerciseWithUserId = { ...exercise, userId: user.id };
-
       if (isEditing) {
-        await ExerciseService.updateExercise(editId, exerciseWithUserId, user.token);
-        setIsEditing(false);
-        setEditId(null);
+        await ExerciseService.updateExercise(editId, exercise, authUser.token);
       } else {
-        await ExerciseService.createExercise(exerciseWithUserId, user.token);
+        await ExerciseService.addExercise(exercise, authUser.token);
       }
-      setExercise({ title: "", description: "", muscleGroup: "" });
       fetchExercises();
+      setExercise({ name: "", description: "", muscleGroup: "" });
+      setIsEditing(false);
+      setEditId(null);
     } catch (error) {
       console.error("Error saving exercise:", error);
       setError("Error saving exercise");
     }
   };
 
+  const handleEdit = (exercise) => {
+    setExercise(exercise);
+    setIsEditing(true);
+    setEditId(exercise.id);
+  };
+
+  const handleCancelEdit = () => {
+    setExercise({ name: "", description: "", muscleGroup: "" });
+    setIsEditing(false);
+    setEditId(null);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await ExerciseService.deleteExercise(id, authUser.token);
+      fetchExercises();
+    } catch (error) {
+      console.error("Error deleting exercise:", error);
+    }
+  };
+
+  const formatMuscleGroup = (muscleGroup) => {
+    return muscleGroup.charAt(0) + muscleGroup.slice(1).toLowerCase();
+  };
+
   return (
-    <div>
-      <Typography variant="h4" align="center" gutterBottom>
-        Exercise Page
-      </Typography>
-      {error && (
-        <Typography variant="body2" align="center" color="error" sx={{ marginBottom: 2 }}>
-          {error}
-        </Typography>
-      )}
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+    <Box>
+      <Typography variant="h4">Exercises</Typography>
+      <form onSubmit={handleSubmit}>
         <TextField
-          label="Title"
-          name="title"
-          value={exercise.title}
-          onChange={handleChange}
+          label="Name"
+          name="name"
+          value={exercise.name}
+          onChange={handleInputChange}
           required
-          fullWidth
-          InputProps={{
-            style: { color: 'white' },
-          }}
-          InputLabelProps={{
-            style: { color: 'white' },
-          }}
         />
         <TextField
           label="Description"
           name="description"
           value={exercise.description}
-          onChange={handleChange}
+          onChange={handleInputChange}
           required
-          fullWidth
-          InputProps={{
-            style: { color: 'white' },
-          }}
-          InputLabelProps={{
-            style: { color: 'white' },
-          }}
         />
-        <FormControl fullWidth required>
-          <InputLabel id="muscle-group-label" style={{ color: 'white' }}>Muscle Group</InputLabel>
+        <FormControl required>
+          <InputLabel>Muscle Group</InputLabel>
           <Select
-            labelId="muscle-group-label"
             name="muscleGroup"
             value={exercise.muscleGroup}
-            onChange={handleChange}
-            label="Muscle Group"
-            style={{ color: 'white' }}
+            onChange={handleInputChange}
           >
             <MenuItem value="CHEST">Chest</MenuItem>
             <MenuItem value="BACK">Back</MenuItem>
             <MenuItem value="LEGS">Legs</MenuItem>
             <MenuItem value="ARMS">Arms</MenuItem>
             <MenuItem value="SHOULDERS">Shoulders</MenuItem>
-            <MenuItem value="ABS">Abs</MenuItem>
           </Select>
         </FormControl>
-        <Button type="submit" variant="contained" color="primary" fullWidth>
-          {isEditing ? "Update Exercise" : "Create Exercise"}
-        </Button>
-      </Box>
-      <div>
-        {exercises.map((exercise) => (
-          <Paper key={exercise.id} sx={{ padding: 2, margin: 2 }}>
-            <Typography variant="h6">{exercise.title}</Typography>
-            <Typography>{exercise.description}</Typography>
-            <Typography>{exercise.muscleGroup}</Typography>
-            <Button onClick={() => {
-              setExercise({ title: exercise.title, description: exercise.description, muscleGroup: exercise.muscleGroup });
-              setIsEditing(true);
-              setEditId(exercise.id);
-            }}>Edit</Button>
-            <Button onClick={async () => {
-              try {
-                await ExerciseService.deleteExercise(exercise.id, user.token);
-                fetchExercises();
-              } catch (error) {
-                console.error("Error deleting exercise:", error);
-                setError("Error deleting exercise");
-              }
-            }}>Delete</Button>
-          </Paper>
-        ))}
-      </div>
-    </div>
+        <Button type="submit">{isEditing ? "Update" : "Add"} Exercise</Button>
+        {isEditing && <Button onClick={handleCancelEdit}>Cancel</Button>}
+      </form>
+      {error && <Typography color="error">{error}</Typography>}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Muscle Group</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {exercises.map((exercise) => (
+              <TableRow key={exercise.id}>
+                <TableCell>{exercise.name}</TableCell>
+                <TableCell>{exercise.description}</TableCell>
+                <TableCell>{formatMuscleGroup(exercise.muscleGroup)}</TableCell>
+                <TableCell>
+                  <Button onClick={() => handleEdit(exercise)}>Edit</Button>
+                  <Button onClick={() => handleDelete(exercise.id)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
 
-export default ExercisePage;
+export default ExercisesPage;
