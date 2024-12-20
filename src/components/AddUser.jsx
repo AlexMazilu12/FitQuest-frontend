@@ -1,86 +1,75 @@
 import React, { useState } from "react";
+import { Button, TextField, Box, Typography, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { UserService } from "../services/UserService";
+import { useAuth } from "../services/AuthProvider.jsx";
 
-function AddUser({ onUserAdded }) {
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        role: "USER"
-    });
+const AddUser = ({ onUserAdded }) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "USER"
+  });
+  const { user: authUser } = useAuth();
 
-    const handleInputChange = (event) => {
-        const { name, value } = event.target;
-        setFormData({
-            ...formData,
-            [name]: value
-        });
-    };
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      await UserService.addUser(formData, authUser.token);
+      onUserAdded();
+      setFormData({ name: "", email: "", password: "", role: "USER" });
+    } catch (error) {
+      console.error("Error adding user:", error);
+    }
+  };
 
-        const response = await fetch("http://localhost:8080/users", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(formData)
-        });
-
-        if (response.ok) {
-            const newUser = await response.json();
-            onUserAdded(newUser);
-        } else {
-            console.error("Failed to add user");
-        }
-    };
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <label>
-                Name:
-                <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                />
-            </label>
-
-            <label>
-                Email:
-                <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                />
-            </label>
-
-            <label>
-                Password:
-                <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    required
-                />
-            </label>
-
-            <label>
-                Role:
-                <select name="role" value={formData.role} onChange={handleInputChange}>
-                    <option value="USER">USER</option>
-                    <option value="TRAINER">TRAINER</option>
-                </select>
-            </label>
-
-            <button type="submit">Register</button>
-        </form>
-    );
-}
+  return (
+    <Box>
+      <Typography variant="h4">Add User</Typography>
+      <form onSubmit={handleSubmit}>
+        <TextField
+          label="Name"
+          name="name"
+          value={formData.name}
+          onChange={handleInputChange}
+          required
+        />
+        <TextField
+          label="Email"
+          name="email"
+          value={formData.email}
+          onChange={handleInputChange}
+          required
+        />
+        <TextField
+          label="Password"
+          name="password"
+          type="password"
+          value={formData.password}
+          onChange={handleInputChange}
+          required
+        />
+        <FormControl required>
+          <InputLabel>Role</InputLabel>
+          <Select
+            name="role"
+            value={formData.role}
+            onChange={handleInputChange}
+          >
+            <MenuItem value="USER">USER</MenuItem>
+            <MenuItem value="TRAINER">TRAINER</MenuItem>
+            <MenuItem value="ADMIN">ADMIN</MenuItem>
+          </Select>
+        </FormControl>
+        <Button type="submit">Add User</Button>
+      </form>
+    </Box>
+  );
+};
 
 export default AddUser;

@@ -6,7 +6,7 @@ import { Button, TextField, Box, Typography, Paper, Table, TableBody, TableCell,
 
 const UsersPage = () => {
   const [users, setUsers] = useState([]);
-  const [user, setUser] = useState({ name: "", email: "", role: "USER" });
+  const [user, setUser] = useState({ name: "", email: "", password: "", role: "USER" });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
@@ -27,8 +27,8 @@ const UsersPage = () => {
     try {
       const response = await UserService.getAllUsers(authUser.token);
       console.log("Response from getAllUsers:", response); // Log the response for debugging
-      if (response && Array.isArray(response.users)) {
-        setUsers(response.users);
+      if (response && Array.isArray(response)) {
+        setUsers(response);
       } else {
         setUsers([]);
         console.error("Expected an array but got:", response);
@@ -56,7 +56,7 @@ const UsersPage = () => {
         await UserService.addUser(user, authUser.token);
       }
       fetchUsers();
-      setUser({ name: "", email: "", role: "USER" });
+      setUser({ name: "", email: "", password: "", role: "USER" });
       setIsEditing(false);
       setEditId(null);
     } catch (error) {
@@ -72,9 +72,18 @@ const UsersPage = () => {
   };
 
   const handleCancelEdit = () => {
-    setUser({ name: "", email: "", role: "USER" });
+    setUser({ name: "", email: "", password: "", role: "USER" });
     setIsEditing(false);
     setEditId(null);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await UserService.deleteUser(id, authUser.token);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
   };
 
   return (
@@ -92,6 +101,14 @@ const UsersPage = () => {
           label="Email"
           name="email"
           value={user.email}
+          onChange={handleInputChange}
+          required
+        />
+        <TextField
+          label="Password"
+          name="password"
+          type="password"
+          value={user.password}
           onChange={handleInputChange}
           required
         />
@@ -129,6 +146,7 @@ const UsersPage = () => {
                 <TableCell>{user.role}</TableCell>
                 <TableCell>
                   <Button onClick={() => handleEdit(user)}>Edit</Button>
+                  <Button onClick={() => handleDelete(user.id)}>Delete</Button>
                 </TableCell>
               </TableRow>
             ))}

@@ -21,4 +21,10 @@ export const UserService = {
     });
     return response.data;
   },
+  deleteUser: async (id, token) => {
+    const response = await axios.delete(`${API_URL}/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  },
 };

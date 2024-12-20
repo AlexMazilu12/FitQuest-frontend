@@ -35,8 +35,12 @@ const Navbar = () => {
                 <li className="nav-item">
                   <Link className="nav-link" to="/trainers">Trainers</Link>
                 </li>
+                
               </>
             )}
+                <li className="nav-item">
+                  <Link className="nav-link" to="/messaging">Messaging</Link>
+                </li>
           </ul>
           <div className="d-flex">
             {isAuthenticated ? (

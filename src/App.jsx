@@ -8,6 +8,7 @@ import {AuthProvider} from "./services/AuthProvider.jsx";
 import TrainersPage from "./pages/TrainersPage.jsx";
 import ExercisePage from "./pages/ExercisePage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
+import MessagingPage from "./pages/MessagingPage.jsx";
 import "./App.css";
 import "@fontsource/inter";
 
@@ -26,6 +27,7 @@ function App() {
                             <Route path="/users" element={<UsersPage />} />
                             <Route path="/register" element={<RegisterPage />} />
                             <Route path="/login" element={<LoginPage />} />
+                            <Route path="/messaging" element={<MessagingPage />} />
                         </Routes>
                     </div>
                 </Router>
