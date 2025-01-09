@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { WorkoutService } from "../services/WorkoutService";
 import { useAuth } from "../services/AuthProvider.jsx";
 import { Button, TextField, Box, Typography, Paper } from "@mui/material";
+import AddExerciseForm from "../components/AddExerciseForm.jsx";
 
 const WorkoutPage = () => {
   const [workouts, setWorkouts] = useState([]);
@@ -33,6 +34,16 @@ const WorkoutPage = () => {
     } catch (error) {
       console.error("Error fetching workouts:", error);
       setError("Error fetching workouts");
+    }
+  };
+
+  const fetchExercisesForWorkout = async (workoutPlanId) => {
+    try {
+      const exercises = await WorkoutService.getExercisesForWorkout(workoutPlanId, user.token);
+      return exercises;
+    } catch (error) {
+      console.error("Error fetching exercises for workout:", error);
+      return [];
     }
   };
 
@@ -123,6 +134,13 @@ const WorkoutPage = () => {
                 setError("Error deleting workout");
               }
             }}>Delete</Button>
+            <AddExerciseForm workoutPlanId={workout.id} onExerciseAdded={fetchWorkouts} userToken={user.token} />
+            <Typography variant="h6">Exercises:</Typography>
+            <ul>
+              {workout.exercises && workout.exercises.map((exercise) => (
+                <li key={exercise.id}>{exercise.name}</li>
+              ))}
+            </ul>
           </Paper>
         ))}
       </div>

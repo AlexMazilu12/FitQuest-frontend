@@ -27,4 +27,10 @@ export const UserService = {
     });
     return response.data;
   },
+  getTrainers: async (token) => {
+    const response = await axios.get(`${API_URL}/trainers`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  },
 };

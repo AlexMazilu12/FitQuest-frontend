@@ -71,4 +71,45 @@ deleteWorkout: async (id, token) => {
   // Return a default success message or handle as needed
   return { message: "Workout deleted successfully" };
   },
+
+  getExercises: async (token) => {
+    const response = await fetch("http://localhost:8080/exercises", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error fetching exercises: ${response.statusText}`);
+    }
+    return await response.json();
+  },
+
+  addExerciseToWorkout: async (workoutId, exercise, token) => {
+    const response = await fetch(`http://localhost:8080/workouts/${workoutId}/exercises`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(exercise),
+    });
+    if (!response.ok) {
+      throw new Error(`Error adding exercise to workout: ${response.statusText}`);
+    }
+    return await response.json();
+  },
+
+  getExercisesForWorkout: async (workoutPlanId, token) => {
+    const response = await fetch(`http://localhost:8080/workouts/${workoutPlanId}/exercises`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error fetching exercises for workout: ${response.statusText}`);
+    }
+    return await response.json();
+  },
 };
