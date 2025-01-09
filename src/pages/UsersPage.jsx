@@ -27,8 +27,8 @@ const UsersPage = () => {
     try {
       const response = await UserService.getAllUsers(authUser.token);
       console.log("Response from getAllUsers:", response); // Log the response for debugging
-      if (response && Array.isArray(response)) {
-        setUsers(response);
+      if (response && Array.isArray(response.users)) {
+        setUsers(response.users);
       } else {
         setUsers([]);
         console.error("Expected an array but got:", response);
