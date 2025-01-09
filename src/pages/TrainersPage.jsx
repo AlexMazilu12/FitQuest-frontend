@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { UserService } from "../services/UserService";
 import { useAuth } from "../services/AuthProvider.jsx";
-import { Typography, List, ListItem, ListItemText, Alert, Card, CardContent, CardActions, Button } from "@mui/material";
+import { Typography, List, ListItem, Alert, Card, CardContent, CardActions, Button } from "@mui/material";
 
 const TrainersPage = () => {
   const [trainers, setTrainers] = useState([]);
@@ -14,7 +14,8 @@ const TrainersPage = () => {
         const response = await UserService.getTrainers(user.token);
         console.log("Response from server:", response); // Log the response
         if (response && Array.isArray(response.users)) {
-          setTrainers(response.users);
+          const filteredTrainers = response.users.filter(trainer => trainer.role === "TRAINER");
+          setTrainers(filteredTrainers);
         } else {
           setTrainers([]);
           console.error("Expected an array but got:", response);

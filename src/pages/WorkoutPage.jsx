@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { WorkoutService } from "../services/WorkoutService";
 import { useAuth } from "../services/AuthProvider.jsx";
-import { Button, TextField, Box, Typography, Paper } from "@mui/material";
+import { Button, TextField, Box, Typography, Paper, Grid } from "@mui/material";
 import AddExerciseForm from "../components/AddExerciseForm.jsx";
 
 const WorkoutPage = () => {
@@ -34,16 +34,6 @@ const WorkoutPage = () => {
     } catch (error) {
       console.error("Error fetching workouts:", error);
       setError("Error fetching workouts");
-    }
-  };
-
-  const fetchExercisesForWorkout = async (workoutPlanId) => {
-    try {
-      const exercises = await WorkoutService.getExercisesForWorkout(workoutPlanId, user.token);
-      return exercises;
-    } catch (error) {
-      console.error("Error fetching exercises for workout:", error);
-      return [];
     }
   };
 
@@ -82,39 +72,48 @@ const WorkoutPage = () => {
           {error}
         </Typography>
       )}
-      <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <TextField
-          label="Title"
-          name="title"
-          value={workout.title}
-          onChange={handleChange}
-          required
-          fullWidth
-          InputProps={{
-            style: { color: 'white' },
-          }}
-          InputLabelProps={{
-            style: { color: 'white' },
-          }}
-        />
-        <TextField
-          label="Description"
-          name="description"
-          value={workout.description}
-          onChange={handleChange}
-          required
-          fullWidth
-          InputProps={{
-            style: { color: 'white' },
-          }}
-          InputLabelProps={{
-            style: { color: 'white' },
-          }}
-        />
-        <Button type="submit" variant="contained" color="primary" fullWidth>
-          {isEditing ? "Update Workout" : "Create Workout"}
-        </Button>
-      </Box>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <TextField
+              label="Title"
+              name="title"
+              value={workout.title}
+              onChange={handleChange}
+              required
+              fullWidth
+              InputProps={{
+                style: { color: 'white' },
+              }}
+              InputLabelProps={{
+                style: { color: 'white' },
+              }}
+            />
+            <TextField
+              label="Description"
+              name="description"
+              value={workout.description}
+              onChange={handleChange}
+              required
+              fullWidth
+              InputProps={{
+                style: { color: 'white' },
+              }}
+              InputLabelProps={{
+                style: { color: 'white' },
+              }}
+            />
+            <Button type="submit" variant="contained" color="primary" fullWidth>
+              {isEditing ? "Update Workout" : "Create Workout"}
+            </Button>
+          </Box>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          {isEditing && (
+            <AddExerciseForm workoutPlanId={editId} onExerciseAdded={fetchWorkouts} userToken={user.token} />
+          )}
+        </Grid>
+      </Grid>
       <div>
         {workouts.map((workout) => (
           <Paper key={workout.id} sx={{ padding: 2, margin: 2 }}>
@@ -134,7 +133,6 @@ const WorkoutPage = () => {
                 setError("Error deleting workout");
               }
             }}>Delete</Button>
-            <AddExerciseForm workoutPlanId={workout.id} onExerciseAdded={fetchWorkouts} userToken={user.token} />
             <Typography variant="h6">Exercises:</Typography>
             <ul>
               {workout.exercises && workout.exercises.map((exercise) => (
