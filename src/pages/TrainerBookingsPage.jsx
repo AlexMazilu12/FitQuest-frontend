@@ -7,16 +7,18 @@ import { Typography, List, ListItem, Card, CardContent, CardActions, Button, Ale
 const TrainerBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState(null);
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isAuthenticated || user.role !== "TRAINER") {
+    if (!isAuthenticated) {
       navigate("/login");
+    } else if (!user || user.role !== "TRAINER") {
+      navigate("/unauthorized");
     } else {
       fetchBookings();
     }
-  }, [isAuthenticated, user.role, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const fetchBookings = async () => {
     try {
@@ -32,7 +34,7 @@ const TrainerBookingsPage = () => {
     try {
       await BookingService.approveBooking(user.token, bookingId);
       alert("Booking approved successfully!");
-      fetchBookings(); // Refresh bookings after approval
+      fetchBookings();
     } catch (error) {
       console.error("Error approving booking:", error);
       setError(`Error approving booking: ${error.response?.data?.message || error.message}`);
