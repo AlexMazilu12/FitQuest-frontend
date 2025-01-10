@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import {AuthProvider} from "./services/AuthProvider.jsx";
 import TrainersPage from "./pages/TrainersPage.jsx";
+import TrainerBookingsPage from "./pages/TrainerBookingsPage.jsx";
 import ExercisePage from "./pages/ExercisePage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
 import MessagingPage from "./pages/MessagingPage.jsx";
@@ -23,6 +24,7 @@ function App() {
                             <Route path="/" element={<h1>Welcome to the Workout App</h1>} />
                             <Route path="/workouts" element={<WorkoutPage />} />
                             <Route path="/trainers" element={<TrainersPage />} />
+                            <Route path="/trainer-bookings" element={<TrainerBookingsPage />} />
                             <Route path="/exercises" element={<ExercisePage />} />
                             <Route path="/users" element={<UsersPage />} />
                             <Route path="/register" element={<RegisterPage />} />

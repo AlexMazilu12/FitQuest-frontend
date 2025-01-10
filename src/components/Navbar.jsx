@@ -1,4 +1,3 @@
-// Navbar.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -35,18 +34,22 @@ const Navbar = () => {
                 <li className="nav-item">
                   <Link className="nav-link" to="/trainers">Trainers</Link>
                 </li>
-                
+                {isAuthenticated && user.role === "TRAINER" && (
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/trainer-bookings">My Bookings</Link>
+                  </li>
+                )}
               </>
             )}
-                <li className="nav-item">
-                  <Link className="nav-link" to="/messaging">Messaging</Link>
-                </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/messaging">Messaging</Link>
+            </li>
           </ul>
           <div className="d-flex">
             {isAuthenticated ? (
               <>
                 <Link className="nav-link text-primary" to="/profile" style={{ marginRight: '10px' }}>Profile</Link>
-                <button className="btn btn-link nav-link" onClick={logout} >Logout</button>
+                <button className="btn btn-link nav-link" onClick={logout}>Logout</button>
               </>
             ) : (
               <Link className="nav-link text-primary" to="/login">Authenticate</Link>
