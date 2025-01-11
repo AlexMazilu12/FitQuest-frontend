@@ -37,4 +37,16 @@ export const BookingService = {
     });
     return response.data;
   },
+  deleteBooking: async (token, bookingId) => {
+    const response = await fetch(`${API_URL}/booking-requests/${bookingId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error deleting booking: ${response.statusText}`);
+    }
+    return true;
+  },
 };

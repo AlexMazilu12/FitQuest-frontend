@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookingService } from "../services/BookingService";
+import { TrainerUserRelationService } from "../services/TrainerUserRelationService";
 import { useAuth } from "../services/AuthProvider.jsx";
-import { Typography, List, ListItem, Card, CardContent, CardActions, Button, Alert } from "@mui/material";
+import { Typography, List, ListItem, Card, CardContent, CardActions, Button, Alert, TextField } from "@mui/material";
 
 const TrainerBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
@@ -30,13 +31,28 @@ const TrainerBookingsPage = () => {
     }
   };
 
-  const handleApprove = async (bookingId) => {
+  const handleApprove = async (booking, price) => {
     try {
-      await BookingService.approveBooking(user.token, bookingId);
-      alert("Booking approved successfully!");
+
+      if (!price) {
+        throw new Error("Price is missing in the booking request.");
+      }
+
+
+      await TrainerUserRelationService.createRelation(user.token, {
+        trainerId: user.userId,
+        userId: booking.userId,
+        price: price
+      });
+
+
+      await BookingService.deleteBooking(user.token, booking.id);
+
+      alert("Booking approved!");
       fetchBookings();
     } catch (error) {
       console.error("Error approving booking:", error);
+      console.error("Error response:", error.response);
       setError(`Error approving booking: ${error.response?.data?.message || error.message}`);
     }
   };
@@ -59,13 +75,20 @@ const TrainerBookingsPage = () => {
                 <Typography variant="h6">Booking from: {booking.userName}</Typography>
                 <Typography variant="body2">Message: {booking.message}</Typography>
                 <Typography variant="body2">Date: {new Date(booking.createdAt).toLocaleString()}</Typography>
+                <TextField
+                  label="Price"
+                  variant="outlined"
+                  size="small"
+                  sx={{ marginTop: 2 }}
+                  onChange={(e) => booking.price = e.target.value}
+                />
               </CardContent>
               <CardActions>
                 {!booking.approved && (
                   <Button
                     size="small"
                     color="primary"
-                    onClick={() => handleApprove(booking.id)}
+                    onClick={() => handleApprove(booking, booking.price)}
                     sx={{
                       backgroundColor: 'blue',
                       color: 'white',
