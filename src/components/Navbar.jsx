@@ -26,24 +26,31 @@ const Navbar = () => {
                   <Link className="nav-link" to="/exercises">Exercises</Link>
                 </li>
               </>
-            ) : (
+            ) : isAuthenticated && user.role === "TRAINER" ? (
               <>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/workouts">Workouts</Link>
+                  <Link className="nav-link" to="/trainer-bookings">My Bookings</Link>
                 </li>
                 <li className="nav-item">
-                  <Link className="nav-link" to="/trainers">Trainers</Link>
+                  <Link className="nav-link" to="/trainer-clients">My Clients</Link>
                 </li>
-                {isAuthenticated && user.role === "TRAINER" && (
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/trainer-bookings">My Bookings</Link>
-                  </li>
-                )}
               </>
+            )  : null}
+            {isAuthenticated && user.role === "USER" && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/trainers">Trainers</Link>
+              </li>
             )}
-            <li className="nav-item">
-              <Link className="nav-link" to="/messaging">Messaging</Link>
-            </li>
+            {isAuthenticated && (user.role === "TRAINER" || user.role === "USER") && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/workouts">Workouts</Link>
+              </li>
+            )}
+            {isAuthenticated && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/messaging">Messaging</Link>
+              </li>
+            )}
           </ul>
           <div className="d-flex">
             {isAuthenticated ? (

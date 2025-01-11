@@ -13,4 +13,22 @@ export const TrainerUserRelationService = {
     });
     return response.data;
   },
+  getClients: async (token, trainerId) => {
+    const response = await axios.get(`${API_URL}/api/user-trainer-relations/trainer/${trainerId}/users`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json'
+      },
+    });
+    return response.data;
+  },
+  deleteRelation: async (token, trainerId, userId) => {
+    const response = await axios.delete(`${API_URL}/api/user-trainer-relations/trainer/${trainerId}/user/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json'
+      },
+    });
+    return response.data;
+  },
 };
