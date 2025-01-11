@@ -26,7 +26,13 @@ const WorkoutPage = () => {
     try {
       const response = await WorkoutService.getAllWorkouts(user.token);
       if (response && Array.isArray(response.workoutPlans)) {
-        setWorkouts(response.workoutPlans);
+        const workoutsWithExercises = await Promise.all(
+          response.workoutPlans.map(async (workout) => {
+            const exercises = await WorkoutService.getExercisesForWorkout(workout.id, user.token);
+            return { ...workout, exercises: exercises.exercises };
+          })
+        );
+        setWorkouts(workoutsWithExercises);
       } else {
         setWorkouts([]);
         console.error("Expected an array but got:", response);
