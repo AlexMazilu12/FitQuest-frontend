@@ -1,3 +1,4 @@
+// src/pages/WorkoutPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { WorkoutService } from "../services/WorkoutService";
@@ -142,7 +143,9 @@ const WorkoutPage = () => {
             <Typography variant="h6">Exercises:</Typography>
             <ul>
               {workout.exercises && workout.exercises.map((exercise) => (
-                <li key={exercise.id}>{exercise.name}</li>
+                <li key={exercise.id}>
+                  {exercise.name} - Sets: {exercise.sets}, Reps: {exercise.reps}, Rest Time: {exercise.restTime} seconds
+                </li>
               ))}
             </ul>
           </Paper>
