@@ -112,4 +112,23 @@ deleteWorkout: async (id, token) => {
     }
     return await response.json();
   },
+
+  updateExerciseInWorkout: async (workoutPlanId, exerciseId, exerciseData, token) => {
+    console.log(`Updating exercise in workout: workoutPlanId=${workoutPlanId}, exerciseId=${exerciseId}, exerciseData=${JSON.stringify(exerciseData)}`);
+    const response = await fetch(`http://localhost:8080/workouts/${workoutPlanId}/exercises/${exerciseId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(exerciseData),
+    });
+  
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`Error updating exercise in workout: ${errorMessage}`);
+    }
+    return await response.json();
+  },
+  
 };

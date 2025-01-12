@@ -1,4 +1,3 @@
-// src/pages/WorkoutPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { WorkoutService } from "../services/WorkoutService";
@@ -12,6 +11,8 @@ const WorkoutPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
+  const [editingExerciseId, setEditingExerciseId] = useState(null);
+  const [exerciseForms, setExerciseForms] = useState({});
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
@@ -69,6 +70,38 @@ const WorkoutPage = () => {
     }
   };
 
+  const handleEditExercise = (workoutId, exercise) => {
+    setEditingExerciseId(`${workoutId}-${exercise.id}`);
+    setExerciseForms((prevForms) => ({
+      ...prevForms,
+      [`${workoutId}-${exercise.id}`]: { sets: exercise.sets, reps: exercise.reps, restTime: exercise.restTime }
+    }));
+    setEditId(workoutId);
+  };
+
+  const handleExerciseChange = (workoutId, exerciseId, e) => {
+    const { name, value } = e.target;
+    setExerciseForms((prevForms) => ({
+      ...prevForms,
+      [`${workoutId}-${exerciseId}`]: { ...prevForms[`${workoutId}-${exerciseId}`], [name]: value }
+    }));
+  };
+
+  const handleSaveExercise = async (workoutId, exerciseId) => {
+    console.log(`Saving exercise: workoutId=${workoutId}, exerciseId=${exerciseId}`);
+    console.log("Current exerciseForms:", exerciseForms);
+    try {
+      const exerciseForm = { ...exerciseForms[`${workoutId}-${exerciseId}`], id: exerciseId };
+      console.log("Exercise form to save:", exerciseForm);
+      await WorkoutService.updateExerciseInWorkout(workoutId, exerciseId, exerciseForm, user.token);
+      setEditingExerciseId(null);
+      fetchWorkouts();
+    } catch (error) {
+      console.error("Error saving exercise:", error);
+      setError("Error saving exercise");
+    }
+  };
+
   return (
     <div>
       <Typography variant="h4" align="center" gutterBottom>
@@ -117,7 +150,13 @@ const WorkoutPage = () => {
         </Grid>
         <Grid item xs={12} md={6}>
           {isEditing && (
-            <AddExerciseForm workoutPlanId={editId} onExerciseAdded={fetchWorkouts} userToken={user.token} />
+            <AddExerciseForm
+              workoutPlanId={editId}
+              onExerciseAdded={fetchWorkouts}
+              userToken={user.token}
+              editingExercise={editingExerciseId}
+              onExerciseEdited={fetchWorkouts}
+            />
           )}
         </Grid>
       </Grid>
@@ -142,11 +181,38 @@ const WorkoutPage = () => {
             }}>Delete</Button>
             <Typography variant="h6">Exercises:</Typography>
             <ul>
-              {workout.exercises && workout.exercises.map((exercise) => (
-                <li key={exercise.id}>
-                  {exercise.name} - Sets: {exercise.sets}, Reps: {exercise.reps}, Rest Time: {exercise.restTime} seconds
-                </li>
-              ))}
+            {workout.exercises && workout.exercises.map((exercise) => (
+              <li key={exercise.id}>
+                {editingExerciseId === `${workout.id}-${exercise.id}` ? (
+                  <div>
+                    <TextField
+                      label="Sets"
+                      name="sets"
+                      value={exerciseForms[`${workout.id}-${exercise.id}`]?.sets || ""}
+                      onChange={(e) => handleExerciseChange(workout.id, exercise.id, e)}
+                    />
+                    <TextField
+                      label="Reps"
+                      name="reps"
+                      value={exerciseForms[`${workout.id}-${exercise.id}`]?.reps || ""}
+                      onChange={(e) => handleExerciseChange(workout.id, exercise.id, e)}
+                    />
+                    <TextField
+                      label="Rest Time"
+                      name="restTime"
+                      value={exerciseForms[`${workout.id}-${exercise.id}`]?.restTime || ""}
+                      onChange={(e) => handleExerciseChange(workout.id, exercise.id, e)}
+                    />
+                    <Button onClick={() => handleSaveExercise(workout.id, exercise.id)}>Confirm</Button>
+                  </div>
+                ) : (
+                  <div>
+                    {exercise.name} - Sets: {exercise.sets}, Reps: {exercise.reps}, Rest Time: {exercise.restTime} seconds
+                    <Button onClick={() => handleEditExercise(workout.id, exercise)}>Edit</Button>
+                  </div>
+                )}
+              </li>
+            ))}
             </ul>
           </Paper>
         ))}

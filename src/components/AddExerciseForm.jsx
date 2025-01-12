@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { TextField, Button, Box, MenuItem } from '@mui/material';
-import { WorkoutService } from '../services/WorkoutService';
+import React, { useState, useEffect } from "react";
+import { WorkoutService } from "../services/WorkoutService";
+import { TextField, Button, Box, Typography } from "@mui/material";
 
-const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken }) => {
+const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExercise, onExerciseEdited }) => {
   const [exercises, setExercises] = useState([]);
-  const [selectedExercise, setSelectedExercise] = useState('');
-  const [sets, setSets] = useState('');
-  const [reps, setReps] = useState('');
-  const [restTime, setRestTime] = useState('');
+  const [selectedExercise, setSelectedExercise] = useState(editingExercise ? editingExercise.id : "");
+  const [sets, setSets] = useState(editingExercise ? editingExercise.sets : "");
+  const [reps, setReps] = useState(editingExercise ? editingExercise.reps : "");
+  const [restTime, setRestTime] = useState(editingExercise ? editingExercise.restTime : "");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchExercises = async () => {
@@ -15,44 +16,83 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken }) => {
         const response = await WorkoutService.getExercises(userToken);
         setExercises(response);
       } catch (error) {
-        console.error('Error fetching exercises:', error);
+        console.error("Error fetching exercises:", error);
+        setError("Error fetching exercises");
       }
     };
+
     fetchExercises();
   }, [userToken]);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  useEffect(() => {
+    if (editingExercise) {
+      setSelectedExercise(editingExercise.id);
+      setSets(editingExercise.sets);
+      setReps(editingExercise.reps);
+      setRestTime(editingExercise.restTime);
+    }
+  }, [editingExercise]);
 
-    const requestBody = {
-      exercise: { id: selectedExercise },
-      sets: parseInt(sets),
-      reps: parseInt(reps),
-      restTime: restTime ? parseInt(restTime) : null
-    };
+  const handleAddExercise = async (e) => {
+    e.preventDefault();
+    setError(null);
 
     try {
-      await WorkoutService.addExerciseToWorkout(workoutPlanId, requestBody, userToken);
-      onExerciseAdded();
+      const exerciseData = {
+        id: selectedExercise,
+        sets,
+        reps,
+        restTime,
+      };
+
+      if (editingExercise) {
+        // Update the exercise in the workout
+        await WorkoutService.updateExerciseInWorkout(workoutPlanId, exerciseData, userToken);
+        onExerciseEdited();
+      } else {
+        // Add the exercise to the workout
+        await WorkoutService.addExerciseToWorkout(workoutPlanId, exerciseData, userToken);
+        onExerciseAdded();
+      }
+
+      setSelectedExercise("");
+      setSets("");
+      setReps("");
+      setRestTime("");
     } catch (error) {
-      console.error('Error adding exercise:', error);
+      console.error("Error adding exercise to workout:", error);
+      if (error.response && error.response.status === 409) {
+        setError("Exercise is already in the workout");
+      } else {
+        setError("Error adding exercise to workout");
+      }
     }
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box component="form" onSubmit={handleAddExercise} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Typography variant="h6">{editingExercise ? "Edit Exercise" : "Add Exercise"}</Typography>
+      {error && (
+        <Typography variant="body2" color="error">
+          {error}
+        </Typography>
+      )}
       <TextField
         select
-        label="Exercise"
+        label="Select Exercise"
         value={selectedExercise}
         onChange={(e) => setSelectedExercise(e.target.value)}
-        required
+        SelectProps={{
+          native: true,
+        }}
         fullWidth
+        disabled={!!editingExercise} // Disable selection if editing
       >
+        <option value="">Select an exercise</option>
         {exercises.map((exercise) => (
-          <MenuItem key={exercise.id} value={exercise.id}>
+          <option key={exercise.id} value={exercise.id}>
             {exercise.name}
-          </MenuItem>
+          </option>
         ))}
       </TextField>
       <TextField
@@ -79,7 +119,7 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken }) => {
         fullWidth
       />
       <Button type="submit" variant="contained" color="primary" fullWidth>
-        Add Exercise
+        {editingExercise ? "Update Exercise" : "Add Exercise"}
       </Button>
     </Box>
   );
