@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { WorkoutService } from "../services/WorkoutService";
-import { TextField, Button, Box, Typography, Modal } from "@mui/material";
+import { TextField, Button, Box, Typography } from "@mui/material";
 
-const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExercise, onExerciseEdited, open, handleClose }) => {
+const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExercise, onExerciseEdited }) => {
   const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(editingExercise ? editingExercise.id : "");
   const [sets, setSets] = useState(editingExercise ? editingExercise.sets : "");
@@ -24,15 +24,6 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
     fetchExercises();
   }, [userToken]);
 
-  useEffect(() => {
-    if (editingExercise) {
-      setSelectedExercise(editingExercise.id);
-      setSets(editingExercise.sets);
-      setReps(editingExercise.reps);
-      setRestTime(editingExercise.restTime);
-    }
-  }, [editingExercise]);
-
   const handleAddExercise = async (e) => {
     e.preventDefault();
     setError(null);
@@ -46,9 +37,11 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
       };
 
       if (editingExercise) {
+        // Update the exercise in the workout
         await WorkoutService.updateExerciseInWorkout(workoutPlanId, exerciseData, userToken);
         onExerciseEdited();
       } else {
+        // Add the exercise to the workout
         await WorkoutService.addExerciseToWorkout(workoutPlanId, exerciseData, userToken);
         onExerciseAdded();
       }
@@ -57,7 +50,6 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
       setSets("");
       setReps("");
       setRestTime("");
-      handleClose();
     } catch (error) {
       console.error("Error adding exercise to workout:", error);
       if (error.response && error.response.status === 409) {
@@ -69,60 +61,58 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
-      <Box component="form" onSubmit={handleAddExercise} sx={{ display: "flex", flexDirection: "column", gap: 2, p: 4, bgcolor: 'background.paper', boxShadow: 24, borderRadius: 1, maxWidth: 400, mx: 'auto', mt: '10%' }}>
-        <Typography variant="h6">{editingExercise ? "Edit Exercise" : "Add Exercise"}</Typography>
-        {error && (
-          <Typography variant="body2" color="error">
-            {error}
-          </Typography>
-        )}
-        <TextField
-          select
-          label="Select Exercise"
-          value={selectedExercise}
-          onChange={(e) => setSelectedExercise(e.target.value)}
-          SelectProps={{
-            native: true,
-          }}
-          fullWidth
-          disabled={!!editingExercise}
-        >
-          <option value="">Select an exercise</option>
-          {exercises.map((exercise) => (
-            <option key={exercise.id} value={exercise.id}>
-              {exercise.name}
-            </option>
-          ))}
-        </TextField>
-        <TextField
-          label="Sets"
-          type="number"
-          value={sets}
-          onChange={(e) => setSets(e.target.value)}
-          required
-          fullWidth
-        />
-        <TextField
-          label="Reps"
-          type="number"
-          value={reps}
-          onChange={(e) => setReps(e.target.value)}
-          required
-          fullWidth
-        />
-        <TextField
-          label="Rest Time (seconds)"
-          type="number"
-          value={restTime}
-          onChange={(e) => setRestTime(e.target.value)}
-          fullWidth
-        />
-        <Button type="submit" variant="contained" color="primary" fullWidth>
-          {editingExercise ? "Update Exercise" : "Add Exercise"}
-        </Button>
-      </Box>
-    </Modal>
+    <Box component="form" onSubmit={handleAddExercise} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Typography variant="h6">{editingExercise ? "Edit Exercise" : "Add Exercise"}</Typography>
+      {error && (
+        <Typography variant="body2" color="error">
+          {error}
+        </Typography>
+      )}
+      <TextField
+        select
+        label="Select Exercise"
+        value={selectedExercise}
+        onChange={(e) => setSelectedExercise(e.target.value)}
+        SelectProps={{
+          native: true,
+        }}
+        fullWidth
+        disabled={!!editingExercise} // Disable selection if editing
+      >
+        <option value="">Select an exercise</option>
+        {exercises.map((exercise) => (
+          <option key={exercise.id} value={exercise.id}>
+            {exercise.name}
+          </option>
+        ))}
+      </TextField>
+      <TextField
+        label="Sets"
+        type="number"
+        value={sets}
+        onChange={(e) => setSets(e.target.value)}
+        required
+        fullWidth
+      />
+      <TextField
+        label="Reps"
+        type="number"
+        value={reps}
+        onChange={(e) => setReps(e.target.value)}
+        required
+        fullWidth
+      />
+      <TextField
+        label="Rest Time (seconds)"
+        type="number"
+        value={restTime}
+        onChange={(e) => setRestTime(e.target.value)}
+        fullWidth
+      />
+      <Button type="submit" variant="contained" color="primary" fullWidth>
+        {editingExercise ? "Update Exercise" : "Add Exercise"}
+      </Button>
+    </Box>
   );
 };
 

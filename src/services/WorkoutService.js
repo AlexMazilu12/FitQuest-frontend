@@ -86,18 +86,34 @@ deleteWorkout: async (id, token) => {
   },
 
   addExerciseToWorkout: async (workoutId, exercise, token) => {
-    const response = await fetch(`http://localhost:8080/workouts/${workoutId}/exercises`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(exercise),
-    });
-    if (!response.ok) {
-      throw new Error(`Error adding exercise to workout: ${response.statusText}`);
+    try {
+      console.log(`Adding exercise to workout: workoutId=${workoutId}, exercise=${JSON.stringify(exercise)}`);
+      console.log(`Authorization token: ${token}`);
+      const response = await fetch(`http://localhost:8080/workouts/${workoutId}/exercises`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          workoutPlanId: workoutId,
+          exercise: {
+            id: exercise.id,
+          },
+          sets: parseInt(exercise.sets, 10),
+          reps: parseInt(exercise.reps, 10),
+          restTime: parseInt(exercise.restTime, 10),
+        }),
+      });
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(`Error adding exercise to workout: ${errorMessage}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error in addExerciseToWorkout:", error);
+      throw error;
     }
-    return await response.json();
   },
 
   getExercisesForWorkout: async (workoutPlanId, token) => {
