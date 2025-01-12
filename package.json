@@ -11,10 +11,10 @@
     "debug": "node --inspect ./node_modules/vite/bin/vite.js"
   },
   "dependencies": {
-    "@emotion/react": "^11.13.5",
-    "@emotion/styled": "^11.13.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@fontsource/inter": "^5.1.0",
-    "@mui/material": "^6.1.9",
+    "@mui/material": "^5.16.14",
     "@stomp/stompjs": "^7.0.0",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
