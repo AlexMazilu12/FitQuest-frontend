@@ -146,5 +146,20 @@ deleteWorkout: async (id, token) => {
     }
     return await response.json();
   },
+
+  deleteExerciseFromWorkout: async (workoutPlanId, exerciseId, token) => {
+    const response = await fetch(`http://localhost:8080/workouts/${workoutPlanId}/exercises/${exerciseId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error deleting exercise from workout: ${response.statusText}`);
+    }
+
+    return { message: "Exercise deleted successfully" };
+  },
   
 };
