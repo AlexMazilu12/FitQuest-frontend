@@ -7,7 +7,7 @@ export const UserService = {
         Authorization: `Bearer ${token}`
       }
     });
-    return response.data; // Ensure this is an object with a users array
+    return response.data;
   },
   addUser: async (user, token) => {
     const response = await axios.post('/users', user, {

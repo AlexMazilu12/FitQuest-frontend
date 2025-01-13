@@ -33,4 +33,10 @@ export const UserService = {
     });
     return response.data;
   },
+  getUser: async (id, token) => {
+    const response = await axios.get(`${API_URL}/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  },
 };

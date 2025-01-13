@@ -11,6 +11,8 @@ import TrainerClientsPage from "./pages/TrainerClientsPage.jsx";
 import ExercisePage from "./pages/ExercisePage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
 import MessagingPage from "./pages/MessagingPage.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
+
 import "./App.css";
 import "@fontsource/inter";
 
@@ -32,6 +34,7 @@ function App() {
                             <Route path="/register" element={<RegisterPage />} />
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/messaging" element={<MessagingPage />} />
+                            <Route path="/profile" element={<ProfilePage />} />
                         </Routes>
                     </div>
                 </Router>

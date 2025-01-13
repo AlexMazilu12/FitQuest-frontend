@@ -37,11 +37,9 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
       };
 
       if (editingExercise) {
-        // Update the exercise in the workout
         await WorkoutService.updateExerciseInWorkout(workoutPlanId, exerciseData, userToken);
         onExerciseEdited();
       } else {
-        // Add the exercise to the workout
         await WorkoutService.addExerciseToWorkout(workoutPlanId, exerciseData, userToken);
         onExerciseAdded();
       }
@@ -77,7 +75,7 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
           native: true,
         }}
         fullWidth
-        disabled={!!editingExercise} // Disable selection if editing
+        disabled={!!editingExercise}
       >
         <option value="">Select an exercise</option>
         {exercises.map((exercise) => (

@@ -9,13 +9,11 @@ const ReceivedMessages = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        console.log('Fetching messages for user:', authUser.sub);
         const response = await axios.get('/notifications/received', {
           headers: {
             Authorization: `Bearer ${authUser.token}`
           }
         });
-        console.log('Received messages:', response.data);
         setMessages(response.data);
       } catch (error) {
         console.error('Error fetching messages:', error);

@@ -5,6 +5,7 @@ import { useAuth } from '../services/AuthProvider.jsx';
 import UserList from '../components/UserList';
 import MessageForm from '../components/MessageForm';
 import ReceivedMessages from '../components/ReceivedMessages';
+import NavBar from '../components/NavBar';
 
 const MessagingPage = () => {
   const [users, setUsers] = useState([]);
@@ -18,13 +19,14 @@ const MessagingPage = () => {
     } else {
       fetchUsers();
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, authUser, navigate]);
 
   const fetchUsers = async () => {
     try {
       const response = await UserService.getAllUsers(authUser.token);
       if (response && Array.isArray(response.users)) {
-        setUsers(response.users);
+        const filteredUsers = response.users.filter(user => user.id !== authUser.userId);
+        setUsers(filteredUsers);
       } else {
         console.error('Fetched data is not an array:', response);
       }
@@ -35,6 +37,7 @@ const MessagingPage = () => {
 
   return (
     <div>
+      <NavBar />
       <UserList users={users} onSelectUser={setSelectedUser} />
       {selectedUser && <MessageForm selectedUser={selectedUser} />}
       <ReceivedMessages />

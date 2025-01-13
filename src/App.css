@@ -22,3 +22,8 @@ body, html {
 .navbar-dark .navbar-nav .nav-link.text-primary {
   color: #0d6efd;
 }
+
+.MuiPaper-root {
+  background-color: #3B3E51 !important;
+  color: white !important;
+}
