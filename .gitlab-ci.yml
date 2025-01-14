@@ -20,7 +20,9 @@ build:
 cypress-test:
   stage: test
   script:
-    - npm run dev
+    - npm install
+    - npm run dev &
+    - npx wait-on http://localhost:5173 --timeout=5000
     - npx cypress run
   dependencies:
     - build
