@@ -22,7 +22,7 @@ cypress-test:
   stage: test
   script:
     - npm ci
-    - nohup npm start &
+    - nohup npm run dev &
     - npx wait-on http://localhost:5173
     - npx cypress run
   dependencies:
