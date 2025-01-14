@@ -3,6 +3,10 @@ image: cypress/base:14.17.0
 variables:
   GIT_DEPTH: "0"
 
+cache:
+  paths:
+    - node_modules/
+
 stages:
   - build
   - test
@@ -13,13 +17,10 @@ build:
     - npm install
     - npm run build
 
-
 cypress-test:
   stage: test
   script:
-    - npm install
     - npm run dev
-    - npx wait-on http://localhost:5173
     - npx cypress run
   dependencies:
     - build
