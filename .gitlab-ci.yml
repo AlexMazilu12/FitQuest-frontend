@@ -26,11 +26,14 @@ build:
       - node_modules/
       - dist/
 
+before_script:
+  - npm install wait-on
+  
 cypress-test:
   stage: test
   script:
     - npm ci
-    - npm start &
+    - Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev"
     - npx wait-on http://localhost:5173 --timeout=5000
     - npx cypress run
   dependencies:
