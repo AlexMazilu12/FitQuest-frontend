@@ -5,10 +5,10 @@ import loginImage from "../assets/images/fitquest-logo.jpg";
 import axios from "axios";
 import { useAuth } from "../services/AuthProvider.jsx";
 import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 const LoginPage = () => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const { register, handleSubmit, formState: { errors } } = useForm();
     const [error, setError] = useState(null);
     const { login, isAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -19,12 +19,10 @@ const LoginPage = () => {
         }
     }, [isAuthenticated, navigate]);
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-
+    const onSubmit = async (data) => {
         try {
             const response = await axios.post("http://localhost:8080/auth/login",
-                { email, password },
+                { email: data.email, password: data.password },
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -32,8 +30,12 @@ const LoginPage = () => {
                 }
             );
             login(response.data.accessToken);
-        } catch (err) {
-            setError(err.response.data.errors[0].error === "INVALID_CREDENTIALS" ? "Invalid credentials" : "An error occurred");
+        } catch (error) {
+            if (error.response && error.response.status === 400 && error.response.data === 'INVALID_CREDENTIALS') {
+                setError('Invalid credentials');
+            } else {
+                setError('An unexpected error occurred');
+            }
         }
     };
 
@@ -80,28 +82,29 @@ const LoginPage = () => {
                     )}
                     <Box
                         component="form"
+                        noValidate // Disable browser's built-in validation
                         sx={{
                             display: "flex",
                             flexDirection: "column",
                             gap: 2,
                         }}
-                        onSubmit={handleSubmit}
+                        onSubmit={handleSubmit(onSubmit)}
                     >
                         <TextField
                             label="Email"
                             type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
                             fullWidth
+                            error={!!errors.email}
+                            helperText={errors.email ? (errors.email.type === 'pattern' ? 'Email is invalid' : 'Email is required') : ''}
+                            {...register("email", { required: true, pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/ })}
                         />
                         <TextField
                             label="Password"
                             type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
                             fullWidth
+                            error={!!errors.password}
+                            helperText={errors.password ? (errors.password.type === 'minLength' ? 'Password must be at least 4 characters' : 'Password is required') : ''}
+                            {...register("password", { required: true, minLength: 4 })}
                         />
                         <Button
                             type="submit"
