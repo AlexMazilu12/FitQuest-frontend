@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ExerciseService } from "../services/ExerciseService";
 import { useAuth } from "../services/AuthProvider.jsx";
-import { Button, TextField, Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
+import { Button, TextField, Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select, MenuItem, FormControl, InputLabel, Modal } from "@mui/material";
 
 const ExercisesPage = () => {
   const [exercises, setExercises] = useState([]);
@@ -10,6 +10,7 @@ const ExercisesPage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
+  const [open, setOpen] = useState(false);
   const { isAuthenticated, user: authUser } = useAuth();
   const navigate = useNavigate();
 
@@ -55,6 +56,7 @@ const ExercisesPage = () => {
       setExercise({ name: "", description: "", muscleGroup: "" });
       setIsEditing(false);
       setEditId(null);
+      setOpen(false);
     } catch (error) {
       console.error("Error saving exercise:", error);
       setError("Error saving exercise");
@@ -65,12 +67,14 @@ const ExercisesPage = () => {
     setExercise(exercise);
     setIsEditing(true);
     setEditId(exercise.id);
+    setOpen(true);
   };
 
   const handleCancelEdit = () => {
     setExercise({ name: "", description: "", muscleGroup: "" });
     setIsEditing(false);
     setEditId(null);
+    setOpen(false);
   };
 
   const handleDelete = async (id) => {
@@ -86,43 +90,62 @@ const ExercisesPage = () => {
     return muscleGroup.charAt(0) + muscleGroup.slice(1).toLowerCase();
   };
 
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   return (
-    <Box>
-      <Typography variant="h4">Exercises</Typography>
-      <form onSubmit={handleSubmit}>
-        <TextField
-          label="Name"
-          name="name"
-          value={exercise.name}
-          onChange={handleInputChange}
-          required
-        />
-        <TextField
-          label="Description"
-          name="description"
-          value={exercise.description}
-          onChange={handleInputChange}
-          required
-        />
-        <FormControl required>
-          <InputLabel>Muscle Group</InputLabel>
-          <Select
-            name="muscleGroup"
-            value={exercise.muscleGroup}
-            onChange={handleInputChange}
-          >
-            <MenuItem value="CHEST">Chest</MenuItem>
-            <MenuItem value="BACK">Back</MenuItem>
-            <MenuItem value="LEGS">Legs</MenuItem>
-            <MenuItem value="ARMS">Arms</MenuItem>
-            <MenuItem value="SHOULDERS">Shoulders</MenuItem>
-          </Select>
-        </FormControl>
-        <Button type="submit">{isEditing ? "Update" : "Add"} Exercise</Button>
-        {isEditing && <Button onClick={handleCancelEdit}>Cancel</Button>}
-      </form>
-      {error && <Typography color="error">{error}</Typography>}
-      <TableContainer component={Paper}>
+    <Box sx={{ paddingTop: '80px', paddingX: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Exercises
+      </Typography>
+      <Button variant="contained" color="primary" onClick={handleOpen} sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', padding: '12px 24px' }}>
+        Add Exercise
+      </Button>
+      <Modal open={open} onClose={handleClose}>
+        <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24, p: 4 }}>
+          <Typography variant="h6" component="h2">
+            {isEditing ? "Update Exercise" : "Create Exercise"}
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <TextField
+              label="Name"
+              name="name"
+              value={exercise.name}
+              onChange={handleInputChange}
+              required
+              fullWidth
+            />
+            <TextField
+              label="Description"
+              name="description"
+              value={exercise.description}
+              onChange={handleInputChange}
+              required
+              fullWidth
+            />
+            <FormControl required fullWidth>
+              <InputLabel>Muscle Group</InputLabel>
+              <Select
+                name="muscleGroup"
+                value={exercise.muscleGroup}
+                onChange={handleInputChange}
+              >
+                <MenuItem value="CHEST">Chest</MenuItem>
+                <MenuItem value="BACK">Back</MenuItem>
+                <MenuItem value="LEGS">Legs</MenuItem>
+                <MenuItem value="ARMS">Arms</MenuItem>
+                <MenuItem value="SHOULDERS">Shoulders</MenuItem>
+              </Select>
+            </FormControl>
+            <Button type="submit" variant="contained" color="primary">
+              {isEditing ? "Update Exercise" : "Create Exercise"}
+            </Button>
+            {isEditing && <Button onClick={handleCancelEdit} variant="outlined" color="secondary">Cancel</Button>}
+          </Box>
+        </Box>
+      </Modal>
+      {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
+      <TableContainer component={Paper} sx={{ mt: 4 }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -139,8 +162,8 @@ const ExercisesPage = () => {
                 <TableCell>{exercise.description}</TableCell>
                 <TableCell>{formatMuscleGroup(exercise.muscleGroup)}</TableCell>
                 <TableCell>
-                  <Button onClick={() => handleEdit(exercise)}>Edit</Button>
-                  <Button onClick={() => handleDelete(exercise.id)}>Delete</Button>
+                  <Button onClick={() => handleEdit(exercise)} variant="contained" color="primary" sx={{ mr: 2 }}>Edit</Button>
+                  <Button onClick={() => handleDelete(exercise.id)} variant="contained" sx={{ backgroundColor: 'red', color: 'white' }}>Delete</Button>
                 </TableCell>
               </TableRow>
             ))}

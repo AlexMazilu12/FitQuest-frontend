@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../services/AuthProvider.jsx';
+import { List, ListItem, ListItemText, Paper, Typography } from '@mui/material';
 
 const ReceivedMessages = () => {
   const [messages, setMessages] = useState([]);
@@ -21,23 +22,28 @@ const ReceivedMessages = () => {
     };
 
     if (authUser) {
-        fetchMessages();
-      }
-    }, [authUser]); 
+      fetchMessages();
+    }
+  }, [authUser]);
 
   return (
-    <div>
-      <h2>Received Messages</h2>
-      <ul>
+    <Paper sx={{ padding: 2, height: '100%', overflowY: 'auto', backgroundColor: '#2C2F33' }}>
+      <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+        Received Messages
+      </Typography>
+      <List>
         {messages.map((message) => (
-          <li key={message.id}>
-            <strong>From:</strong> {message.from} <br />
-            <strong>Message:</strong> {message.text}
-          </li>
+          <ListItem key={message.id} sx={{ color: 'white' }}>
+            <ListItemText
+              primary={`From: ${message.from}`}
+              secondary={`Message: ${message.text}`}
+              sx={{ color: 'white' }}
+            />
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Paper>
   );
 };
-                    
+
 export default ReceivedMessages;

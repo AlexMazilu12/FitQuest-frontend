@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { BookingService } from "../services/BookingService";
 import { TrainerUserRelationService } from "../services/TrainerUserRelationService";
 import { useAuth } from "../services/AuthProvider.jsx";
-import { Typography, List, ListItem, Card, CardContent, CardActions, Button, Alert, TextField } from "@mui/material";
+import { Typography, List, ListItem, Card, CardContent, CardActions, Button, Alert, TextField, Box } from "@mui/material";
 
 const TrainerBookingsPage = () => {
   const [bookings, setBookings] = useState([]);
@@ -33,18 +33,15 @@ const TrainerBookingsPage = () => {
 
   const handleApprove = async (booking, price) => {
     try {
-
       if (!price) {
         throw new Error("Price is missing in the booking request.");
       }
-
 
       await TrainerUserRelationService.createRelation(user.token, {
         trainerId: user.userId,
         userId: booking.userId,
         price: price
       });
-
 
       await BookingService.deleteBooking(user.token, booking.id);
 
@@ -58,7 +55,7 @@ const TrainerBookingsPage = () => {
   };
 
   return (
-    <div>
+    <Box sx={{ paddingTop: '80px', paddingX: 2 }}>
       <Typography variant="h4" align="center" gutterBottom>
         My Bookings
       </Typography>
@@ -107,7 +104,7 @@ const TrainerBookingsPage = () => {
           </ListItem>
         ))}
       </List>
-    </div>
+    </Box>
   );
 };
 

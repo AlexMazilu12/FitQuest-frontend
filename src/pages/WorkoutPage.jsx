@@ -22,12 +22,13 @@ const WorkoutPage = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
-    } else {
+    } else if (user && user.userId) {
       fetchWorkouts();
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const fetchWorkouts = async () => {
+    if (!user || !user.token) return;
     try {
       const response = await WorkoutService.getAllWorkouts(user.token);
       if (response && Array.isArray(response.workoutPlans)) {
@@ -57,8 +58,13 @@ const WorkoutPage = () => {
     e.preventDefault();
     setError(null);
 
+    if (!user || !user.userId) {
+      setError("User ID is not available. Please try again.");
+      return;
+    }
+
     try {
-      const workoutWithUserId = { ...workout, userId: user.id };
+      const workoutWithUserId = { ...workout, userId: user.userId };
 
       if (isEditing) {
         await WorkoutService.updateWorkout(editId, workoutWithUserId, user.token);
@@ -94,11 +100,9 @@ const WorkoutPage = () => {
   };
 
   const handleSaveExercise = async (workoutId, exerciseId) => {
-    console.log(`Saving exercise: workoutId=${workoutId}, exerciseId=${exerciseId}`);
-    console.log("Current exerciseForms:", exerciseForms);
+    if (!user || !user.token) return;
     try {
       const exerciseForm = { ...exerciseForms[`${workoutId}-${exerciseId}`], id: exerciseId };
-      console.log("Exercise form to save:", exerciseForm);
       await WorkoutService.updateExerciseInWorkout(workoutId, exerciseId, exerciseForm, user.token);
       setEditingExerciseId(null);
       fetchWorkouts();
@@ -109,6 +113,7 @@ const WorkoutPage = () => {
   };
 
   const handleDeleteExercise = async (workoutId, exerciseId) => {
+    if (!user || !user.token) return;
     try {
       await WorkoutService.deleteExerciseFromWorkout(workoutId, exerciseId, user.token);
       fetchWorkouts();
@@ -140,7 +145,7 @@ const WorkoutPage = () => {
   };
 
   return (
-    <div>
+    <Box sx={{ padding: 2, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Typography variant="h4" align="center" gutterBottom>
         Workout Page
       </Typography>
@@ -149,101 +154,108 @@ const WorkoutPage = () => {
           {error}
         </Typography>
       )}
-      <Grid container spacing={2} justifyContent="center">
+      <Grid container spacing={2} justifyContent="center" sx={{ flexGrow: 1 }}>
         {workouts.map((workout) => (
           <Grid item xs={12} sm={6} md={4} key={workout.id}>
-            <Paper sx={{ padding: 2, margin: 2 }}>
-              <Typography variant="h6">{workout.title}</Typography>
-              <Typography>{workout.description}</Typography>
-              <Button
-                onClick={() => {
-                  if (isEditing && editId === workout.id) {
-                    resetFormStates();
-                  } else {
-                    setWorkout({ title: workout.title, description: workout.description });
-                    setIsEditing(true);
-                    setEditId(workout.id);
-                    handleOpen();
-                  }
-                }}
-                style={{ backgroundColor: 'green', color: 'white', marginRight: '8px' }} // Set edit button color to green and add margin
-              >
-                {isEditing && editId === workout.id ? "Cancel Edit" : "Edit"}
-              </Button>
-              <Button
-                onClick={async () => {
-                  try {
-                    await WorkoutService.deleteWorkout(workout.id, user.token);
-                    fetchWorkouts();
-                  } catch (error) {
-                    console.error("Error deleting workout:", error);
-                    setError("Error deleting workout");
-                  }
-                }}
-                style={{ backgroundColor: 'red', color: 'white' }} // Set delete button color to red
-              >
-                Delete
-              </Button>
-              <Typography variant="h6">Exercises:</Typography>
-              <ul>
-                {workout.exercises && workout.exercises.map((exercise) => (
-                  <li key={exercise.id}>
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
-                      {editingExerciseId === `${workout.id}-${exercise.id}` ? (
-                        <div>
-                          <TextField
-                            label="Sets"
-                            name="sets"
-                            value={exerciseForms[`${workout.id}-${exercise.id}`]?.sets || ""}
-                            onChange={(e) => handleExerciseChange(workout.id, exercise.id, e)}
-                          />
-                          <TextField
-                            label="Reps"
-                            name="reps"
-                            value={exerciseForms[`${workout.id}-${exercise.id}`]?.reps || ""}
-                            onChange={(e) => handleExerciseChange(workout.id, exercise.id, e)}
-                          />
-                          <TextField
-                            label="Rest Time"
-                            name="restTime"
-                            value={exerciseForms[`${workout.id}-${exercise.id}`]?.restTime || ""}
-                            onChange={(e) => handleExerciseChange(workout.id, exercise.id, e)}
-                          />
-                          <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, mt: 1 }}>
-                            <Button onClick={() => handleSaveExercise(workout.id, exercise.id)} style={{ backgroundColor: '#1EA896', color: 'white', marginRight: '8px' }}>
-                              Confirm
-                            </Button>
-                            <Button onClick={() => setEditingExerciseId(null)} style={{ backgroundColor: 'red', color: 'white' }}>
-                              Cancel
-                            </Button>
-                          </Box>
-                        </div>
-                      ) : (
-                        <div>
-                          {exercise.name} - Sets: {exercise.sets}, Reps: {exercise.reps}, Rest Time: {exercise.restTime} seconds
-                          <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, mt: 1 }}>
-                            <Button onClick={() => handleEditExercise(workout.id, exercise)} style={{ backgroundColor: 'green', color: 'white', marginRight: '8px' }}>
-                              Edit
-                            </Button>
-                            <Button onClick={() => handleDeleteExercise(workout.id, exercise.id)} style={{ backgroundColor: 'red', color: 'white' }}>
-                              Delete
-                            </Button>
-                          </Box>
-                        </div>
-                      )}
-                    </Box>
-                  </li>
-                ))}
-              </ul>
-              <Button
-                onClick={() => {
-                  setAddingExerciseToWorkoutId(workout.id);
-                  handleOpenExerciseModal();
-                }}
-                style={{ backgroundColor: '#1EA896', color: 'white' }} // Set add exercise button color to green
-              >
-                {addingExerciseToWorkoutId === workout.id ? "Cancel" : "Add Exercise"}
-              </Button>
+            <Paper sx={{ padding: 2, margin: 2, minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <Box>
+                <Typography variant="h6">{workout.title}</Typography>
+                <Typography>{workout.description}</Typography>
+              </Box>
+              <Box>
+                <Button
+                  onClick={() => {
+                    if (isEditing && editId === workout.id) {
+                      resetFormStates();
+                    } else {
+                      setWorkout({ title: workout.title, description: workout.description });
+                      setIsEditing(true);
+                      setEditId(workout.id);
+                      handleOpen();
+                    }
+                  }}
+                  style={{ backgroundColor: 'green', color: 'white', marginRight: '8px' }} // Set edit button color to green and add margin
+                >
+                  {isEditing && editId === workout.id ? "Cancel Edit" : "Edit"}
+                </Button>
+                <Button
+                  onClick={async () => {
+                    if (!user || !user.token) return;
+                    try {
+                      await WorkoutService.deleteWorkout(workout.id, user.token);
+                      fetchWorkouts();
+                    } catch (error) {
+                      console.error("Error deleting workout:", error);
+                      setError("Error deleting workout");
+                    }
+                  }}
+                  style={{ backgroundColor: 'red', color: 'white' }} // Set delete button color to red
+                >
+                  Delete
+                </Button>
+              </Box>
+              <Box>
+                <Typography variant="h6">Exercises:</Typography>
+                <ul>
+                  {workout.exercises && workout.exercises.map((exercise) => (
+                    <li key={exercise.id}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
+                        {editingExerciseId === `${workout.id}-${exercise.id}` ? (
+                          <div>
+                            <TextField
+                              label="Sets"
+                              name="sets"
+                              value={exerciseForms[`${workout.id}-${exercise.id}`]?.sets || ""}
+                              onChange={(e) => handleExerciseChange(workout.id, exercise.id, e)}
+                            />
+                            <TextField
+                              label="Reps"
+                              name="reps"
+                              value={exerciseForms[`${workout.id}-${exercise.id}`]?.reps || ""}
+                              onChange={(e) => handleExerciseChange(workout.id, exercise.id, e)}
+                            />
+                            <TextField
+                              label="Rest Time"
+                              name="restTime"
+                              value={exerciseForms[`${workout.id}-${exercise.id}`]?.restTime || ""}
+                              onChange={(e) => handleExerciseChange(workout.id, exercise.id, e)}
+                            />
+                            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, mt: 1 }}>
+                              <Button onClick={() => handleSaveExercise(workout.id, exercise.id)} style={{ backgroundColor: '#1EA896', color: 'white', marginRight: '8px' }}>
+                                Confirm
+                              </Button>
+                              <Button onClick={() => setEditingExerciseId(null)} style={{ backgroundColor: 'red', color: 'white' }}>
+                                Cancel
+                              </Button>
+                            </Box>
+                          </div>
+                        ) : (
+                          <div>
+                            {exercise.name} - Sets: {exercise.sets}, Reps: {exercise.reps}, Rest Time: {exercise.restTime} seconds
+                            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 1, mt: 1 }}>
+                              <Button onClick={() => handleEditExercise(workout.id, exercise)} style={{ backgroundColor: 'green', color: 'white', marginRight: '8px' }}>
+                                Edit
+                              </Button>
+                              <Button onClick={() => handleDeleteExercise(workout.id, exercise.id)} style={{ backgroundColor: 'red', color: 'white' }}>
+                                Delete
+                              </Button>
+                            </Box>
+                          </div>
+                        )}
+                      </Box>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  onClick={() => {
+                    setAddingExerciseToWorkoutId(workout.id);
+                    handleOpenExerciseModal();
+                  }}
+                  style={{ backgroundColor: '#1EA896', color: 'white' }} // Set add exercise button color to green
+                >
+                  {addingExerciseToWorkoutId === workout.id ? "Cancel" : "Add Exercise"}
+                </Button>
+              </Box>
             </Paper>
           </Grid>
         ))}
@@ -291,11 +303,11 @@ const WorkoutPage = () => {
               fetchWorkouts();
               handleCloseExerciseModal();
             }}
-            userToken={user.token}
+            userToken={user?.token}
           />
         </Box>
       </Modal>
-    </div>
+    </Box>
   );
 };
 

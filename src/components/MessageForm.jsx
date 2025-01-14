@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../services/AuthProvider.jsx';
+import { Box, TextField, Button, Typography } from '@mui/material';
 
 const MessageForm = ({ selectedUser }) => {
   const [message, setMessage] = useState('');
@@ -35,12 +36,25 @@ const MessageForm = ({ selectedUser }) => {
   };
 
   return (
-    <div>
-      <h2>Send Message to {selectedUser.name}</h2>
-      <textarea value={message} onChange={e => setMessage(e.target.value)} />
-      <button onClick={sendMessage}>Send</button>
-      {status && <p>{status}</p>}
-    </div>
+    <Box sx={{ mt: 2 }}>
+      <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+        Send Message to {selectedUser.name}
+      </Typography>
+      <TextField
+        label="Type a message"
+        value={message}
+        onChange={e => setMessage(e.target.value)}
+        fullWidth
+        multiline
+        rows={4}
+        variant="outlined"
+        sx={{ mb: 2, backgroundColor: 'white' }}
+      />
+      <Button variant="contained" color="primary" onClick={sendMessage}>
+        Send
+      </Button>
+      {status && <Typography variant="body2" color="textSecondary" sx={{ mt: 2, color: 'white' }}>{status}</Typography>}
+    </Box>
   );
 };
 

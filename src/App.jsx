@@ -20,24 +20,24 @@ function App() {
     return (
         <div style={{ backgroundColor: '#23242F', height: '100%', width: "100%" }}>
             <AuthProvider>
-                <Router>
-                    <Navbar />
-                    <div className="container mt-5 pt-4">
-                        <Routes>
-                            <Route path="/" element={<h1>Welcome to the Workout App</h1>} />
-                            <Route path="/workouts" element={<WorkoutPage />} />
-                            <Route path="/trainers" element={<TrainersPage />} />
-                            <Route path="/trainer-bookings" element={<TrainerBookingsPage />} />
-                            <Route path="/trainer-clients" element={<TrainerClientsPage />} />
-                            <Route path="/exercises" element={<ExercisePage />} />
-                            <Route path="/users" element={<UsersPage />} />
-                            <Route path="/register" element={<RegisterPage />} />
-                            <Route path="/login" element={<LoginPage />} />
-                            <Route path="/messaging" element={<MessagingPage />} />
-                            <Route path="/profile" element={<ProfilePage />} />
-                        </Routes>
-                    </div>
-                </Router>
+            <Router>
+                <Navbar />
+                <div className="container mt-5 pt-4">
+                <Routes>
+                    <Route path="/" element={<h1>Welcome to the Workout App</h1>} />
+                    <Route path="/workouts" element={<WorkoutPage />} />
+                    <Route path="/trainers" element={<TrainersPage />} />
+                    <Route path="/trainer-bookings" element={<TrainerBookingsPage />} />
+                    <Route path="/trainer-clients" element={<TrainerClientsPage />} />
+                    <Route path="/exercises" element={<ExercisePage />} />
+                    <Route path="/users" element={<UsersPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/messaging" element={<MessagingPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                </Routes>
+                </div>
+            </Router>
             </AuthProvider>
         </div>
     );

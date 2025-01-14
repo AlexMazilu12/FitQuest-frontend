@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TrainerUserRelationService } from "../services/TrainerUserRelationService";
 import { useAuth } from "../services/AuthProvider.jsx";
-import { Typography, List, ListItem, Card, CardContent, CardActions, Button, Alert } from "@mui/material";
+import { Typography, List, ListItem, Card, CardContent, CardActions, Button, Alert, Box } from "@mui/material";
 
 const TrainerClientsPage = () => {
   const [clients, setClients] = useState([]);
@@ -43,7 +43,7 @@ const TrainerClientsPage = () => {
   };
 
   return (
-    <div>
+    <Box sx={{ paddingTop: '80px', paddingX: 2 }}>
       <Typography variant="h4" align="center" gutterBottom>
         My Clients
       </Typography>
@@ -82,7 +82,7 @@ const TrainerClientsPage = () => {
           </ListItem>
         ))}
       </List>
-    </div>
+    </Box>
   );
 };
 

@@ -72,7 +72,7 @@ const TrainersPage = () => {
   };
 
   return (
-    <div>
+    <div style={{ paddingTop: '80px' }}>
       <Typography variant="h4" align="center" gutterBottom>
         Trainers
       </Typography>
