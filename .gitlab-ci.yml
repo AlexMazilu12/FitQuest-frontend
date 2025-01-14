@@ -3,6 +3,11 @@ image: cypress/base:14.17.0
 variables:
   GIT_DEPTH: "0"
 
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
 stages:
   - build
   - test
@@ -10,14 +15,14 @@ stages:
 build:
   stage: build
   script:
-    - npm install
+    - npm ci
     - npm run build
 
 cypress-test:
   stage: test
   script:
-    - npm install
-    - npm start
+    - npm ci
+    - nohup npm start &
     - npx wait-on http://localhost:5173
     - npx cypress run
   dependencies:
