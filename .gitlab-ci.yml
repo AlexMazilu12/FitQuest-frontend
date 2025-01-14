@@ -17,7 +17,7 @@ cypress-test:
   stage: test
   script:
     - npm install
-    - npm start &
+    - npm start
     - npx wait-on http://localhost:5173
     - npx cypress run
   dependencies:
