@@ -1,11 +1,16 @@
-image: cypress/base:14.17.0
+image: cypress/browsers:22.12.0
 
 variables:
   GIT_DEPTH: "0"
+  npm_config_cache: '$CI_PROJECT_DIR/.npm'
+  CYPRESS_CACHE_FOLDER: '$CI_PROJECT_DIR/cache/Cypress'
 
 cache:
+  key: ${CI_COMMIT_REF_SLUG}
   paths:
     - node_modules/
+    - .npm/
+    - cache/Cypress
 
 stages:
   - build
@@ -14,14 +19,18 @@ stages:
 build:
   stage: build
   script:
-    - npm install
+    - npm ci
     - npm run build
+  artifacts:
+    paths:
+      - node_modules/
+      - dist/
 
 cypress-test:
   stage: test
   script:
-    - npm install
-    - Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev"
+    - npm ci
+    - npm start &
     - npx wait-on http://localhost:5173 --timeout=5000
     - npx cypress run
   dependencies:
