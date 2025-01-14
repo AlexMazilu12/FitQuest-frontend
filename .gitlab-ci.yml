@@ -7,6 +7,7 @@ cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
     - node_modules/
+    - .npm
 
 stages:
   - build
@@ -14,12 +15,22 @@ stages:
 
 build:
   stage: build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - .npm
   script:
     - npm ci
     - npm run build
 
 cypress-test:
   stage: test
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+      - .npm
   script:
     - npm ci
     - nohup npm run dev &
