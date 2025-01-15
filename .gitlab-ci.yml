@@ -16,7 +16,7 @@ stages:
   - test
 
 before_script:
-  - git config --system core.longpaths true
+  - powershell -Command "git config --system core.longpaths true"
   - npm install wait-on
 
 build:
