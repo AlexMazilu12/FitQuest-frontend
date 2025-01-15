@@ -12,6 +12,7 @@ stages:
 before_script:
   - git config --system core.longpaths true
   - npm install wait-on
+  - if (Test-Path -Path $CI_PROJECT_DIR/cache/Cypress) { Remove-Item -Recurse -Force $CI_PROJECT_DIR/cache/Cypress }
 
 build:
   stage: build
