@@ -9,8 +9,11 @@ cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
     - node_modules/
-    - cache/Cypress/
 
+hooks:
+  pre_get_sources_script:
+    - git config --system core.longpaths true
+    
 stages:
   - build
   - test
