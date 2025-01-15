@@ -29,7 +29,7 @@ cypress-test:
   stage: test
   script:
     - npm ci
-    - Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev"
+     Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev" -PassThru | Out-Null
     - npx wait-on http://localhost:5173 --timeout=5000
     - npx cypress run
   dependencies:
