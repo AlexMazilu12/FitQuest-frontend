@@ -1,12 +1,36 @@
 image: cypress/browsers:22.12.0
 
+variables:
+  GIT_DEPTH: "0"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+
 stages:
   - build
+  - test
+
+before_script:
+  - powershell -Command "git config --system core.longpaths true"
+  - npm install wait-on
 
 build:
   stage: build
-  hooks:
-    pre_get_sources_script:
-      - git config --system core.longpaths true
   script:
-    - if (Test-Path -Path $CI_PROJECT_DIR/cache/Cypress) { Remove-Item -Recurse -Force $CI_PROJECT_DIR/cache/Cypress }
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+cypress-test:
+  stage: test
+  script:
+    - npm ci
+    - Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev"
+    - npx wait-on http://localhost:5173 --timeout=5000
+    - npx cypress run
+  dependencies:
+    - build
