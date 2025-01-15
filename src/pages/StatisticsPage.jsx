@@ -1,14 +1,44 @@
-import React from 'react';
-import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper, Box } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { StatisticsService } from '../services/StatisticsService';
+import { useAuth } from '../services/AuthProvider.jsx';
 
-const StatisticsPage = ({ statistics }) => {
+const StatisticsPage = () => {
+  const [statistics, setStatistics] = useState([]);
+  const { isAuthenticated, user: authUser } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    } else if (!authUser || authUser.role !== "ADMIN") {
+      navigate("/unauthorized");
+    } else {
+      fetchStatistics(authUser.token);
+    }
+  }, [isAuthenticated, authUser, navigate]);
+
+  const fetchStatistics = async (token) => {
+    try {
+      const data = await StatisticsService.getWorkoutPlanCountsByUserWithDetails(token);
+      if (Array.isArray(data)) {
+        setStatistics(data);
+      } else {
+        console.error('Unexpected data format:', data);
+      }
+    } catch (error) {
+      console.error('Error fetching statistics:', error);
+    }
+  };
+
   return (
-    <Container>
+    <Box sx={{ paddingTop: '80px', paddingX: 2 }}>
       <Typography variant="h4" gutterBottom>
         User Statistics
       </Typography>
-      <Paper>
+      <Paper sx={{ padding: 2 }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -43,7 +73,7 @@ const StatisticsPage = ({ statistics }) => {
         <Legend />
         <Bar dataKey="averageExerciseCount" fill="#8884d8" />
       </BarChart>
-    </Container>
+    </Box>
   );
 };
 

@@ -46,10 +46,10 @@ const LoginPage = () => {
                 sx={{
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "flex-start", // Aligns to the left
-                    paddingLeft: "37vw", // Optional: Adjust this value to fine-tune position
-                    minHeight: "100vh",
-                    overflow: "hidden", // Removes scrollbar
+                    justifyContent: "center",
+                    minHeight: "90vh", // Adjusted to fit content higher on the page
+                    paddingTop: "40px", // Reduced padding to fit content higher
+                    paddingX: 2,
                 }}
             >
                 <Paper
@@ -60,8 +60,8 @@ const LoginPage = () => {
                         display: "flex",
                         flexDirection: "column",
                         gap: "20px",
-                        width: "1000px",
-                        maxWidth: 400,
+                        width: "100%",
+                        maxWidth: 500,
                     }}
                 >
                     <div style={{ display: "flex", justifyContent: "center" }}>

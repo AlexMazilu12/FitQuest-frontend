@@ -25,6 +25,9 @@ const Navbar = () => {
                 <li className="nav-item">
                   <Link className="nav-link" to="/exercises">Exercises</Link>
                 </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/statistics">Statistics</Link>
+                </li>
               </>
             ) : isAuthenticated && user.role === "TRAINER" ? (
               <>

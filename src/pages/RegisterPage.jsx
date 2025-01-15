@@ -53,10 +53,8 @@ const RegisterPage = () => {
                     alignItems: "center",
                     justifyContent: "center",
                     minHeight: "100vh",
-                    paddingTop: "275px",
-                    paddingLeft: "37vw",
-                    overflow: "auto",
-                    
+                    paddingTop: "80px",
+                    paddingX: 2,
                 }}
             >
                 <Paper
@@ -68,7 +66,7 @@ const RegisterPage = () => {
                         flexDirection: "column",
                         gap: "20px",
                         width: "100%",
-                        maxWidth: 400,
+                        maxWidth: 600,
                     }}
                 >
                     <div style={{ display: "flex", justifyContent: "center" }}>
