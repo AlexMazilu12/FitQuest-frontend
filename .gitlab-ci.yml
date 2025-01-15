@@ -14,6 +14,10 @@ stages:
   - build
   - test
 
+before_script:
+  - git config --global core.longPaths true
+  - npm install wait-on
+
 build:
   stage: build
   script:
@@ -23,9 +27,6 @@ build:
     paths:
       - dist/
 
-before_script:
-  - npm install wait-on
-  
 cypress-test:
   stage: test
   script:
