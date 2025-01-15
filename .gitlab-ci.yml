@@ -14,15 +14,9 @@ stages:
   - build
   - test
 
-before_script:
-  - git config --global core.longPaths true
-  - npm install wait-on
-  - if (Test-Path -Path $CI_PROJECT_DIR/cache/Cypress) { Remove-Item -Recurse -Force $CI_PROJECT_DIR/cache/Cypress }
-
 build:
   stage: build
   script:
-    - git config --global core.longPaths true
     - npm ci
     - npm run build
   artifacts:
@@ -32,7 +26,6 @@ build:
 cypress-test:
   stage: test
   script:
-    - git config --global core.longPaths true
     - npm ci
     - Start-Process -NoNewWindow -FilePath "npm" -ArgumentList "run dev"
     - npx wait-on http://localhost:5173 --timeout=5000
