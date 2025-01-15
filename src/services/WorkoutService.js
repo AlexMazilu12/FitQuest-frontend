@@ -1,15 +1,15 @@
 export const WorkoutService = {
-  getAllWorkouts: async (token) => {
-      const response = await fetch("http://localhost:8080/workouts", {
-          method: "GET",
-          headers: {
-              Authorization: `Bearer ${token}`, // Pass the token for authentication
-          },
-      });
-      if (!response.ok) {
-          throw new Error(`Error fetching workouts: ${response.statusText}`);
-      }
-      return await response.json();
+  getAllWorkouts: async (token, userId) => {
+    const response = await fetch(`http://localhost:8080/workouts?userId=${userId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error fetching workouts: ${response.statusText}`);
+    }
+    return await response.json();
   },
 
   createWorkout: async (workout, token) => {

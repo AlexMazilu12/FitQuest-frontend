@@ -30,7 +30,7 @@ const WorkoutPage = () => {
   const fetchWorkouts = async () => {
     if (!user || !user.token) return;
     try {
-      const response = await WorkoutService.getAllWorkouts(user.token);
+      const response = await WorkoutService.getAllWorkouts(user.token, user.userId);
       if (response && Array.isArray(response.workoutPlans)) {
         const workoutsWithExercises = await Promise.all(
           response.workoutPlans.map(async (workout) => {
