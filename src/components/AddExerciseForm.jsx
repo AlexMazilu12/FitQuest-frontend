@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { WorkoutService } from "../services/WorkoutService";
 import { TextField, Button, Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, MenuItem, Select, InputLabel, FormControl, Grid } from "@mui/material";
 
@@ -6,12 +7,17 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
   const [exercises, setExercises] = useState([]);
   const [filteredExercises, setFilteredExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(editingExercise ? editingExercise.id : "");
-  const [sets, setSets] = useState(editingExercise ? editingExercise.sets : "");
-  const [reps, setReps] = useState(editingExercise ? editingExercise.reps : "");
-  const [restTime, setRestTime] = useState(editingExercise ? editingExercise.restTime : "");
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [muscleGroup, setMuscleGroup] = useState("");
+  const [error, setError] = useState(null);
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    defaultValues: {
+      sets: editingExercise ? editingExercise.sets : "",
+      reps: editingExercise ? editingExercise.reps : "",
+      restTime: editingExercise ? editingExercise.restTime : "",
+    }
+  });
 
   useEffect(() => {
     const fetchExercises = async () => {
@@ -37,18 +43,20 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
     );
   }, [searchTerm, muscleGroup, exercises]);
 
-  const handleAddExercise = async (e) => {
-    e.preventDefault();
-    setError(null);
+  const onSubmit = async (data) => {
+    if (!selectedExercise) {
+      setError("Please select an exercise");
+      return;
+    }
+
+    const exerciseData = {
+      id: selectedExercise,
+      sets: data.sets,
+      reps: data.reps,
+      restTime: data.restTime,
+    };
 
     try {
-      const exerciseData = {
-        id: selectedExercise,
-        sets,
-        reps,
-        restTime,
-      };
-
       if (editingExercise) {
         await WorkoutService.updateExerciseInWorkout(workoutPlanId, selectedExercise, exerciseData, userToken);
         onExerciseEdited();
@@ -57,10 +65,9 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
         onExerciseAdded();
       }
 
+      reset();
       setSelectedExercise("");
-      setSets("");
-      setReps("");
-      setRestTime("");
+      setError(null);
     } catch (error) {
       console.error("Error adding exercise to workout:", error);
       if (error.response && error.response.status === 409) {
@@ -72,7 +79,7 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
   };
 
   return (
-    <Box component="form" onSubmit={handleAddExercise} sx={{ flexGrow: 1, width: '100%' }}>
+    <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ flexGrow: 1, width: '100%' }}>
       <Typography variant="h6">{editingExercise ? "Edit Exercise" : "Add Exercise"}</Typography>
       {error && (
         <Typography variant="body2" color="error">
@@ -84,27 +91,27 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
           <TextField
             label="Sets"
             type="number"
-            value={sets}
-            onChange={(e) => setSets(e.target.value)}
-            required
+            {...register("sets", { required: "Sets must be at least 1", min: { value: 1, message: "Sets must be at least 1" } })}
+            error={!!errors.sets}
+            helperText={errors.sets?.message}
             fullWidth
           />
           <TextField
             label="Reps"
             type="number"
-            value={reps}
-            onChange={(e) => setReps(e.target.value)}
-            required
+            {...register("reps", { required: "Reps must be at least 1", min: { value: 1, message: "Reps must be at least 1" } })}
+            error={!!errors.reps}
+            helperText={errors.reps?.message}
             fullWidth
           />
           <TextField
             label="Rest Time (seconds)"
             type="number"
-            value={restTime}
-            onChange={(e) => setRestTime(e.target.value)}
+            {...register("restTime", { required: "Rest Time must be at least 1", min: { value: 1, message: "Rest Time must be at least 1" } })}
+            error={!!errors.restTime}
+            helperText={errors.restTime?.message}
             fullWidth
           />
-          
           <Button type="submit" variant="contained" color="primary" fullWidth style={{ backgroundColor: '#1EA896', color: 'white' }}>
             {editingExercise ? "Update Exercise" : "Add Exercise"}
           </Button>
@@ -135,8 +142,7 @@ const AddExerciseForm = ({ workoutPlanId, onExerciseAdded, userToken, editingExe
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell>Exercise Name</TableCell>
-                </TableRow>
+                <TableCell sx={{ color: 'black !important' }}>Exercise Name</TableCell>                </TableRow>
               </TableHead>
               <TableBody>
                 {filteredExercises.map((exercise) => (
