@@ -79,30 +79,26 @@ describe('CRUD on workout, adding and deleting exercises', () => {
         cy.get('input[name="sets"]').type('3');
         cy.get('input[name="reps"]').type('10');
         cy.get('input[name="restTime"]').type('60');
-        cy.get('table tbody tr').first().click(); // Select the first exercise
+        cy.get('table tbody tr').first().click();
         cy.get('button[type="submit"]').contains('Add Exercise').click();
-        // Check if the exercise appears in the workout list
         cy.get('ul').contains('Sets: 3, Reps: 10, Rest Time: 60 seconds');
       });
     
       it('should edit an exercise with valid inputs', () => {
-        cy.get('button').contains('Edit Exercise').first().click(); // Click the first edit button for an exercise
+        cy.get('button').contains('Edit Exercise').first().click(); 
         cy.get('input[name="sets"]').clear().type('4');
         cy.get('input[name="reps"]').clear().type('12');
         cy.get('button[type="submit"]').contains('Confirm').click();
-        // Check if the exercise is updated in the workout list
         cy.get('ul').contains('Sets: 4, Reps: 12, Rest Time: 60 seconds');
       });
     
       it('should delete an exercise', () => {
-        cy.get('button').contains('Delete Exercise').first().click(); // Click the first delete button for an exercise
-        // Check if the exercise is removed from the workout list
+        cy.get('button').contains('Delete Exercise').first().click();
         cy.get('ul').should('not.contain', 'Sets: 4, Reps: 12, Rest Time: 60 seconds');
       });
     
       it('should delete a workout', () => {
         cy.contains('Delete').first().click();
-        // Check if the workout is removed from the list
         cy.get('ul').should('not.contain', 'Updated Workout');
       });
     });

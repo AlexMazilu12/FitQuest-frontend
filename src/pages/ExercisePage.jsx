@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm, Controller } from "react-hook-form";
 import { ExerciseService } from "../services/ExerciseService";
 import { useAuth } from "../services/AuthProvider.jsx";
 import { Button, TextField, Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select, MenuItem, FormControl, InputLabel, Modal } from "@mui/material";
 
 const ExercisesPage = () => {
   const [exercises, setExercises] = useState([]);
-  const [exercise, setExercise] = useState({ name: "", description: "", muscleGroup: "" });
   const [isEditing, setIsEditing] = useState(false);
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
@@ -17,6 +17,8 @@ const ExercisesPage = () => {
   const [search, setSearch] = useState("");
   const { isAuthenticated, user: authUser } = useAuth();
   const navigate = useNavigate();
+
+  const { register, handleSubmit, control, reset, formState: { errors } } = useForm();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -42,21 +44,15 @@ const ExercisesPage = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setExercise({ ...exercise, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
       if (isEditing) {
-        await ExerciseService.updateExercise(editId, exercise, authUser.token);
+        await ExerciseService.updateExercise(editId, data, authUser.token);
       } else {
-        await ExerciseService.addExercise(exercise, authUser.token);
+        await ExerciseService.addExercise(data, authUser.token);
       }
       fetchExercises();
-      setExercise({ name: "", description: "", muscleGroup: "" });
+      reset();
       setIsEditing(false);
       setEditId(null);
       setOpen(false);
@@ -67,14 +63,14 @@ const ExercisesPage = () => {
   };
 
   const handleEdit = (exercise) => {
-    setExercise(exercise);
+    reset(exercise);
     setIsEditing(true);
     setEditId(exercise.id);
     setOpen(true);
   };
 
   const handleCancelEdit = () => {
-    setExercise({ name: "", description: "", muscleGroup: "" });
+    reset();
     setIsEditing(false);
     setEditId(null);
     setOpen(false);
@@ -90,7 +86,7 @@ const ExercisesPage = () => {
   };
 
   const formatMuscleGroup = (muscleGroup) => {
-    return muscleGroup.charAt(0).toUpperCase() + muscleGroup.slice(1);
+    return muscleGroup.charAt(0).toUpperCase() + muscleGroup.slice(1).toLowerCase();
   };
 
   const handleOpen = () => setOpen(true);
@@ -104,36 +100,42 @@ const ExercisesPage = () => {
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <FormControl sx={{ minWidth: 150 }}>
           <InputLabel sx={{ color: 'white' }}>Muscle Group</InputLabel>
-          <Select sx={{ color: 'white' }}
+          <Select
+            sx={{ color: 'white' }}
             value={filterMuscleGroup}
             onChange={(e) => setFilterMuscleGroup(e.target.value)}
+            data-cy="input-muscleGroup"
           >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="CHEST">Chest</MenuItem>
-            <MenuItem value="BACK">Back</MenuItem>
-            <MenuItem value="LEGS">Legs</MenuItem>
-            <MenuItem value="ARMS">Arms</MenuItem>
-            <MenuItem value="SHOULDERS">Shoulders</MenuItem>
+            <MenuItem value="" data-cy="select-option-all">All</MenuItem>
+            <MenuItem value="CHEST" data-cy="select-option-CHEST">Chest</MenuItem>
+            <MenuItem value="BACK" data-cy="select-option-BACK">Back</MenuItem>
+            <MenuItem value="LEGS" data-cy="select-option-LEGS">Legs</MenuItem>
+            <MenuItem value="ARMS" data-cy="select-option-ARMS">Arms</MenuItem>
+            <MenuItem value="SHOULDERS" data-cy="select-option-SHOULDERS">Shoulders</MenuItem>
           </Select>
         </FormControl>
         <FormControl>
           <InputLabel sx={{ color: 'white' }}>Order By</InputLabel>
-          <Select sx={{ color: 'white' }}
+          <Select
+            sx={{ color: 'white' }}
             value={orderBy}
             onChange={(e) => setOrderBy(e.target.value)}
+            data-cy="input-orderBy"
           >
-            <MenuItem value="name">Name</MenuItem>
-            <MenuItem value="createdAt">Creation Date</MenuItem>
+            <MenuItem value="name" data-cy="select-option-name">Name</MenuItem>
+            <MenuItem value="createdAt" data-cy="select-option-createdAt">Creation Date</MenuItem>
           </Select>
         </FormControl>
         <FormControl>
           <InputLabel sx={{ color: 'white' }}>Direction</InputLabel>
-          <Select sx={{ color: 'white' }}
+          <Select
+            sx={{ color: 'white' }}
             value={direction}
             onChange={(e) => setDirection(e.target.value)}
+            data-cy="input-direction"
           >
-            <MenuItem value="asc">Ascending</MenuItem>
-            <MenuItem value="desc">Descending</MenuItem>
+            <MenuItem value="asc" data-cy="select-option-asc">Ascending</MenuItem>
+            <MenuItem value="desc" data-cy="select-option-desc">Descending</MenuItem>
           </Select>
         </FormControl>
         <TextField
@@ -146,6 +148,7 @@ const ExercisesPage = () => {
           InputProps={{
             style: { color: 'white' },
           }}
+          data-cy="input-search"
         />
       </Box>
       <Button variant="contained" color="primary" onClick={handleOpen} sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', padding: '12px 24px' }}>
@@ -156,36 +159,45 @@ const ExercisesPage = () => {
           <Typography variant="h6" component="h2">
             {isEditing ? "Update Exercise" : "Create Exercise"}
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               label="Name"
-              name="name"
-              value={exercise.name}
-              onChange={handleInputChange}
-              required
+              {...register("name", { required: "Name cannot be blank" })}
+              error={!!errors.name}
+              helperText={errors.name?.message}
               fullWidth
+              data-cy="input-name"
             />
             <TextField
               label="Description"
-              name="description"
-              value={exercise.description}
-              onChange={handleInputChange}
-              required
+              {...register("description", { required: "Description cannot be blank" })}
+              error={!!errors.description}
+              helperText={errors.description?.message}
               fullWidth
+              data-cy="input-description"
             />
             <FormControl required fullWidth>
               <InputLabel>Muscle Group</InputLabel>
-              <Select
+              <Controller
                 name="muscleGroup"
-                value={exercise.muscleGroup}
-                onChange={handleInputChange}
-              >
-                <MenuItem value="CHEST">Chest</MenuItem>
-                <MenuItem value="BACK">Back</MenuItem>
-                <MenuItem value="LEGS">Legs</MenuItem>
-                <MenuItem value="ARMS">Arms</MenuItem>
-                <MenuItem value="SHOULDERS">Shoulders</MenuItem>
-              </Select>
+                control={control}
+                defaultValue=""
+                rules={{ required: "Muscle Group cannot be blank" }}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    error={!!errors.muscleGroup}
+                    data-cy="input-muscleGroupedit"
+                  >
+                    <MenuItem value="CHEST" data-cy="select-option-CHESTedit">Chest</MenuItem>
+                    <MenuItem value="BACK" data-cy="select-option-BACKedit">Back</MenuItem>
+                    <MenuItem value="LEGS" data-cy="select-option-LEGSedit">Legs</MenuItem>
+                    <MenuItem value="ARMS" data-cy="select-option-ARMSedit">Arms</MenuItem>
+                    <MenuItem value="SHOULDERS" data-cy="select-option-SHOULDERSedit">Shoulders</MenuItem>
+                  </Select>
+                )}
+              />
+              {errors.muscleGroup && <Typography color="error">{errors.muscleGroup.message}</Typography>}
             </FormControl>
             <Button type="submit" variant="contained" color="primary">
               {isEditing ? "Update Exercise" : "Create Exercise"}
