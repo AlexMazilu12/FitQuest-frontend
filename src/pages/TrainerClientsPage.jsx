@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TrainerUserRelationService } from "../services/TrainerUserRelationService";
+import { WorkoutService } from "../services/WorkoutService";
 import { useAuth } from "../services/AuthProvider.jsx";
-import { Typography, List, ListItem, Card, CardContent, CardActions, Button, Alert, Box } from "@mui/material";
+import { Typography, List, ListItem, Card, CardContent, CardActions, Button, Alert, Box, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
 const TrainerClientsPage = () => {
   const [clients, setClients] = useState([]);
+  const [workouts, setWorkouts] = useState([]);
+  const [assignedWorkouts, setAssignedWorkouts] = useState({});
+  const [selectedWorkout, setSelectedWorkout] = useState("");
   const [error, setError] = useState(null);
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
@@ -17,6 +21,7 @@ const TrainerClientsPage = () => {
       navigate("/unauthorized");
     } else {
       fetchClients();
+      fetchWorkouts();
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -24,21 +29,50 @@ const TrainerClientsPage = () => {
     try {
       const response = await TrainerUserRelationService.getClients(user.token, user.userId);
       setClients(response);
+      fetchAssignedWorkouts(response);
     } catch (error) {
       console.error("Error fetching clients:", error);
       setError(`Error fetching clients: ${error.response?.data?.message || error.message}`);
     }
   };
 
-  const handleDisband = async (clientId) => {
+  const fetchWorkouts = async () => {
     try {
-      console.log(`Attempting to disband client with id: ${clientId}`);
-      await TrainerUserRelationService.deleteRelation(user.token, user.userId, clientId);
-      alert("Client disbanded!");
-      fetchClients();
+      const response = await WorkoutService.getAllWorkouts(user.token, user.userId);
+      setWorkouts(response.workoutPlans);
     } catch (error) {
-      console.error("Error disbanding client:", error);
-      setError(`Error disbanding client: ${error.response?.data?.message || error.message}`);
+      console.error("Error fetching workouts:", error);
+      setError(`Error fetching workouts: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const fetchAssignedWorkouts = async (clients) => {
+    try {
+      const assignedWorkoutsData = {};
+      for (const client of clients) {
+        const response = await WorkoutService.getAssignedWorkouts(user.token, client.id);
+        assignedWorkoutsData[client.id] = response.workoutPlans;
+      }
+      setAssignedWorkouts(assignedWorkoutsData);
+    } catch (error) {
+      console.error("Error fetching assigned workouts:", error);
+      setError(`Error fetching assigned workouts: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const handleAssignWorkout = async (clientId) => {
+    try {
+      const response = await WorkoutService.assignWorkoutToClient(selectedWorkout, clientId, user.token);
+      if (response.status === 409) {
+        alert(response.data.message);
+      } else {
+        alert("Workout assigned to client!");
+        await fetchAssignedWorkouts(clients);
+        setSelectedWorkout("");
+      }
+    } catch (error) {
+      console.error("Error assigning workout to client:", error);
+      setError(`Error assigning workout to client: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -59,8 +93,46 @@ const TrainerClientsPage = () => {
               <CardContent>
                 <Typography variant="h6">Client: {client.name}</Typography>
                 <Typography variant="body2">Email: {client.email}</Typography>
+                <Typography variant="body2">Assigned Workouts:</Typography>
+                <ul>
+                  {assignedWorkouts[client.id]?.map((workout) => (
+                    <li key={workout.id}>{workout.title}</li>
+                  ))}
+                </ul>
               </CardContent>
               <CardActions>
+                <FormControl fullWidth>
+                  <InputLabel>Assign Workout</InputLabel>
+                  <Select
+                    value={selectedWorkout}
+                    onChange={(e) => setSelectedWorkout(e.target.value)}
+                  >
+                    {workouts
+                      .filter(workout => !assignedWorkouts[client.id]?.some(assigned => assigned.id === workout.id))
+                      .map((workout) => (
+                        <MenuItem key={workout.id} value={workout.id}>
+                          {workout.title}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
+                <Button
+                  size="small"
+                  color="primary"
+                  onClick={() => handleAssignWorkout(client.id)}
+                  disabled={assignedWorkouts[client.id]?.some((workout) => workout.id === selectedWorkout)}
+                  sx={{
+                    backgroundColor: '#1EA896',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    border: '2px solid #1EA896',
+                    borderRadius: '4px',
+                    padding: '4px 8px',
+                    marginBottom: '8px',
+                  }}
+                >
+                  Assign
+                </Button>
                 <Button
                   size="small"
                   color="secondary"

@@ -54,7 +54,7 @@ deleteWorkout: async (id, token) => {
   const response = await fetch(`http://localhost:8080/workouts/${id}`, {
       method: "DELETE",
       headers: {
-          Authorization: `Bearer ${token}`, // Include the token in headers
+          Authorization: `Bearer ${token}`,
       },
   });
 
@@ -62,13 +62,11 @@ deleteWorkout: async (id, token) => {
       throw new Error(`Error deleting workout: ${response.statusText}`);
   }
 
-  // Check if the response has a JSON body
   const contentType = response.headers.get("Content-Type");
   if (contentType && contentType.includes("application/json")) {
       return await response.json();
   }
 
-  // Return a default success message or handle as needed
   return { message: "Workout deleted successfully" };
   },
 
@@ -161,5 +159,32 @@ deleteWorkout: async (id, token) => {
 
     return { message: "Exercise deleted successfully" };
   },
+
+  assignWorkoutToClient: async (workoutId, clientId, token) => {
+    const response = await fetch(`http://localhost:8080/workouts/${workoutId}/assign`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ workoutId, userId: clientId }),
+    });
+    if (!response.ok) {
+      throw new Error(`Error assigning workout to client: ${response.statusText}`);
+    }
+    return await response.json();
+  },
   
+  getAssignedWorkouts: async (token, clientId) => {
+    const response = await fetch(`http://localhost:8080/workouts?userId=${clientId}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error fetching assigned workouts: ${response.statusText}`);
+    }
+    return await response.json();
+  },
 };
