@@ -56,7 +56,14 @@ describe('Exercise Page Admin Tests', () => {
       cy.get('button[type="submit"]').contains('Update Exercise').click();
       cy.contains(updatedExerciseName);
     });
-  
+
+    it('should search exercises by name', () => {
+        const searchQuery = 'Updated Exercise';
+        cy.get('[data-cy="input-search"]').type(searchQuery);
+        cy.get('table tbody tr').should('have.length.greaterThan', 0).each(($row) => {
+          cy.wrap($row).contains(searchQuery);
+        });
+      });
     it('should delete the created exercise', () => {
       const updatedExerciseName = 'Updated Exercise';
       cy.contains(updatedExerciseName).parent().contains('Delete').click();
