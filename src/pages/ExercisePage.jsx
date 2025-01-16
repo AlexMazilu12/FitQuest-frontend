@@ -11,6 +11,10 @@ const ExercisesPage = () => {
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
+  const [filterMuscleGroup, setFilterMuscleGroup] = useState("");
+  const [orderBy, setOrderBy] = useState("name");
+  const [direction, setDirection] = useState("asc");
+  const [search, setSearch] = useState("");
   const { isAuthenticated, user: authUser } = useAuth();
   const navigate = useNavigate();
 
@@ -22,12 +26,11 @@ const ExercisesPage = () => {
     } else {
       fetchExercises();
     }
-  }, [isAuthenticated, authUser, navigate]);
+  }, [isAuthenticated, authUser, navigate, filterMuscleGroup, orderBy, direction, search]);
 
   const fetchExercises = async () => {
     try {
-      const response = await ExerciseService.getAllExercises(authUser.token);
-      console.log("Response from getAllExercises:", response); // Log the response for debugging
+      const response = await ExerciseService.getAllExercises(authUser.token, filterMuscleGroup, orderBy, direction, search);
       if (response && Array.isArray(response)) {
         setExercises(response);
       } else {
@@ -87,7 +90,7 @@ const ExercisesPage = () => {
   };
 
   const formatMuscleGroup = (muscleGroup) => {
-    return muscleGroup.charAt(0) + muscleGroup.slice(1).toLowerCase();
+    return muscleGroup.charAt(0).toUpperCase() + muscleGroup.slice(1);
   };
 
   const handleOpen = () => setOpen(true);
@@ -98,6 +101,53 @@ const ExercisesPage = () => {
       <Typography variant="h4" gutterBottom>
         Exercises
       </Typography>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <FormControl sx={{ minWidth: 150 }}>
+          <InputLabel sx={{ color: 'white' }}>Muscle Group</InputLabel>
+          <Select sx={{ color: 'white' }}
+            value={filterMuscleGroup}
+            onChange={(e) => setFilterMuscleGroup(e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="CHEST">Chest</MenuItem>
+            <MenuItem value="BACK">Back</MenuItem>
+            <MenuItem value="LEGS">Legs</MenuItem>
+            <MenuItem value="ARMS">Arms</MenuItem>
+            <MenuItem value="SHOULDERS">Shoulders</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl>
+          <InputLabel sx={{ color: 'white' }}>Order By</InputLabel>
+          <Select sx={{ color: 'white' }}
+            value={orderBy}
+            onChange={(e) => setOrderBy(e.target.value)}
+          >
+            <MenuItem value="name">Name</MenuItem>
+            <MenuItem value="createdAt">Creation Date</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl>
+          <InputLabel sx={{ color: 'white' }}>Direction</InputLabel>
+          <Select sx={{ color: 'white' }}
+            value={direction}
+            onChange={(e) => setDirection(e.target.value)}
+          >
+            <MenuItem value="asc">Ascending</MenuItem>
+            <MenuItem value="desc">Descending</MenuItem>
+          </Select>
+        </FormControl>
+        <TextField
+          label="Search..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          InputLabelProps={{
+            style: { color: 'white' },
+          }}
+          InputProps={{
+            style: { color: 'white' },
+          }}
+        />
+      </Box>
       <Button variant="contained" color="primary" onClick={handleOpen} sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', padding: '12px 24px' }}>
         Add Exercise
       </Button>

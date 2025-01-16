@@ -1,6 +1,13 @@
 export const ExerciseService = {
-  getAllExercises: async (token) => {
-    const response = await fetch("http://localhost:8080/exercises", {
+  getAllExercises: async (token, muscleGroup, orderBy, direction, search) => {
+    const params = new URLSearchParams({
+      muscleGroup: muscleGroup || "",
+      orderBy: orderBy || "name",
+      direction: direction || "asc",
+      search: search || "",
+    }).toString();
+
+    const response = await fetch(`http://localhost:8080/exercises?${params}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

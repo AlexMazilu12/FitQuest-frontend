@@ -73,3 +73,7 @@ h1 {
   line-height: 1.1;
   margin-top: 20px;
 }
+
+.MuiTableCell-root {
+  color: white !important;
+}
