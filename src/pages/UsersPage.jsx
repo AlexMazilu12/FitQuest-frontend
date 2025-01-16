@@ -1,4 +1,3 @@
-// src/pages/UsersPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserService } from "../services/UserService";
@@ -12,6 +11,7 @@ const UsersPage = () => {
   const [editId, setEditId] = useState(null);
   const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const { isAuthenticated, user: authUser } = useAuth();
   const navigate = useNavigate();
 
@@ -27,9 +27,7 @@ const UsersPage = () => {
 
   const fetchUsers = async () => {
     try {
-      console.log("Fetching users with token:", authUser.token); // Debugging: Log the token
       const response = await UserService.getAllUsers(authUser.token);
-      console.log("Response from getAllUsers:", response); // Debugging: Log the response
       if (response && Array.isArray(response.users)) {
         setUsers(response.users);
       } else {
@@ -38,7 +36,7 @@ const UsersPage = () => {
       }
     } catch (error) {
       if (error.response && error.response.status === 401) {
-        console.error("Unauthorized access - redirecting to login"); // Debugging: Log unauthorized access
+        console.error("Unauthorized access - redirecting to login");
         navigate("/login");
       } else {
         console.error("Error fetching users:", error);
@@ -100,11 +98,29 @@ const UsersPage = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Box sx={{ paddingTop: '80px', paddingX: 2 }}>
       <Typography variant="h4" gutterBottom>
         Users
       </Typography>
+      <TextField
+        label="Search" 
+        variant="outlined"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        InputLabelProps={{
+          style: { color: 'white' },
+        }}
+        InputProps={{
+          style: { color: 'white' },
+        }}
+        sx={{
+          pr: 2}}
+      />
       <Button variant="contained" color="primary" onClick={handleOpen} sx={{ mb: 2, fontSize: '1.2rem', fontWeight: 'bold', padding: '12px 24px' }}>
         Add User
       </Button>
@@ -170,7 +186,7 @@ const UsersPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {users.map((user) => (
+            {filteredUsers.map((user) => (
               <TableRow key={user.id}>
                 <TableCell>{user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
@@ -188,4 +204,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage;
+export default UsersPage; 
