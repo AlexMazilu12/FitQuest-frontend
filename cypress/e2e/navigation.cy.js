@@ -29,6 +29,7 @@ describe('Navigation and Unauthorized Access Tests', () => {
       cy.visit('http://localhost:5173/statistics');
       cy.url().should('include', '/unauthorized');
     });
+    
   
     it('should allow users to access workouts page', () => {
       cy.visit('http://localhost:5173/login');
