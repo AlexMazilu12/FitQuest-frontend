@@ -60,6 +60,22 @@ const TrainerClientsPage = () => {
     }
   };
 
+  const handleDisband = async (clientId) => {
+    try {
+      await TrainerUserRelationService.deleteRelation(user.token, user.userId, clientId);
+      setClients(clients.filter(client => client.id !== clientId));
+      setAssignedWorkouts(prev => {
+        const updated = { ...prev };
+        delete updated[clientId];
+        return updated;
+      });
+    } catch (error) {
+      console.error("Error disbanding client:", error);
+      setError(`Error disbanding client: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+
   const handleAssignWorkout = async (clientId) => {
     try {
       const response = await WorkoutService.assignWorkoutToClient(selectedWorkout, clientId, user.token);
